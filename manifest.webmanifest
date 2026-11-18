@@ -1,0 +1,16 @@
+{
+  "name": "Fit mit Fuxi",
+  "short_name": "Fuxi",
+  "description": "Für jeden Test fit werden – Deutsch, Englisch, Geografie, Geschichte, Biologie, Physik",
+  "lang": "de",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff8f2",
+  "theme_color": "#ff6b2c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
