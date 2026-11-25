@@ -365,7 +365,7 @@ body[data-focus] main:has(.kp2){padding-bottom:250px!important}
 .fach{position:relative;border:0;border-radius:22px;padding:16px 12px 14px;background:var(--fc);color:#fff;box-shadow:0 6px 0 var(--fd);text-align:center;font:inherit;cursor:pointer;transition:transform .08s;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:150px;justify-content:center}
 .fach:active{transform:translateY(5px);box-shadow:0 1px 0 var(--fd)}
 .fach .fi{font-size:44px;line-height:1.1;width:68px;height:68px;border-radius:20px;background:rgba(255,255,255,.22);display:grid;place-items:center;margin-bottom:4px}
-.fach .fn{font-weight:900;font-size:19px;letter-spacing:.2px}
+.fach .fn{font-weight:900;font-size:19px;letter-spacing:.2px;line-height:1.2}
 .fach .fs{font-size:13px;font-weight:800;opacity:.92}
 .fach .fbar{width:80%;height:8px;border-radius:6px;background:rgba(255,255,255,.3);overflow:hidden;margin-top:6px}
 .fach .fbar i{display:block;height:100%;background:#fff;border-radius:6px}
@@ -509,6 +509,7 @@ const FAECHER = [
   { id: 'geschichte', name: 'Geschichte', icon: '🏛️', c: '#f59e0b', d: '#c27c0e' },
   { id: 'biologie', name: 'Biologie', icon: '🌿', c: '#58cc02', d: '#46a302' },
   { id: 'physik', name: 'Physik', icon: '⚡', c: '#7c4dff', d: '#5b2fd6' },
+  { id: 'dgb', name: 'Digitale Grundbildung', icon: '💻', c: '#ff6fae', d: '#e0458b' },
 ];
 const FACH = Object.fromEntries(FAECHER.map(f => [f.id, f]));
 const THEMEN = [], THEMA = {}, FRAGE = {}, TESTS_C = [];
@@ -725,6 +726,46 @@ thema('physik', {
 });
 </script>
 <script>
+/* ===== Digitale Grundbildung ===== */
+thema('dgb', {
+  id: 'dgb-computer', title: 'Computer-Grundbegriffe', icon: '🖥️', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Hardware, Software, EVA-Prinzip, Speichergrößen.',
+  lern: [
+    { h: 'Hardware und Software', html: `<p><b>Hardware</b> ist alles, was man angreifen kann: Bildschirm, Tastatur, Maus, Drucker, Prozessor.</p><p><b>Software</b> sind die Programme: das <b>Betriebssystem</b> (z. B. Windows, Android, iOS) und <b>Apps/Anwendungen</b> (z. B. Word, ein Browser, ein Spiel).</p><div class="merke">Hardware = angreifbar · Software = Programme</div>` },
+    { h: 'Das EVA-Prinzip', html: `<p>Jeder Computer arbeitet nach dem <b>EVA-Prinzip</b>: <b>E</b>ingabe → <b>V</b>erarbeitung → <b>A</b>usgabe.</p><p><b>Eingabegeräte:</b> Tastatur, Maus, Mikrofon, Kamera, Scanner. <b>Verarbeitung:</b> der Prozessor (CPU). <b>Ausgabegeräte:</b> Bildschirm, Drucker, Lautsprecher.</p><p>Der <b>Arbeitsspeicher (RAM)</b> merkt sich Daten nur, solange der Computer läuft. Auf der <b>Festplatte/SSD</b> bleiben Daten auch nach dem Ausschalten gespeichert.</p><div class="merke">Speichergrößen: 1 Byte = 8 Bit · Kilobyte (KB) < Megabyte (MB) < Gigabyte (GB) < Terabyte (TB)</div>` },
+  ],
+  fragen: [
+    { q: 'Ist eine Tastatur Hardware oder Software?', c: ['Hardware', 'Software'], a: 'Hardware' },
+    { q: 'Ist ein Browser Hardware oder Software?', c: ['Hardware', 'Software'], a: 'Software' },
+    { q: 'Wofür steht EVA?', a: ['Eingabe, Verarbeitung, Ausgabe', 'Eingabe Verarbeitung Ausgabe', 'Eingabe – Verarbeitung – Ausgabe'], c: ['Erstellen, Verschicken, Ablegen', 'Einschalten, Verwenden, Ausschalten', 'Eingabe, Speichern, Löschen'] },
+    { q: 'Ordne zu: Eingabe- oder Ausgabegerät?', pairs: [['Maus', 'Eingabe'], ['Drucker', 'Ausgabe'], ['Mikrofon', 'Eingabe'], ['Lautsprecher', 'Ausgabe']] },
+    { q: 'Kreuze alle <b>Eingabegeräte</b> an.', m: ['Tastatur', 'Bildschirm', 'Kamera', 'Scanner', 'Drucker'], a: ['Tastatur', 'Kamera', 'Scanner'] },
+    { q: 'Welcher Teil des Computers verarbeitet die Daten?', a: ['Prozessor', 'CPU', 'der Prozessor'], c: ['Bildschirm', 'Festplatte', 'Maus'] },
+    { q: 'Ein Betriebssystem ist zum Beispiel …', c: ['Windows', 'Word', 'YouTube', 'die Maus'], a: 'Windows' },
+    { q: 'Im Arbeitsspeicher (RAM) bleiben die Daten auch nach dem Ausschalten gespeichert.', tf: false, erk: 'Dafür ist die Festplatte bzw. SSD da. Der Arbeitsspeicher wird beim Ausschalten gelöscht.' },
+    { q: '1 Byte = ___ Bit', gap: ['8|acht'] },
+    { q: 'Ordne die Speichergrößen – die kleinste zuerst.', order: ['Kilobyte', 'Megabyte', 'Gigabyte', 'Terabyte'] },
+  ],
+});
+thema('dgb', {
+  id: 'dgb-sicher', title: 'Sicher im Internet', icon: '🔒', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Passwörter, Phishing, Datenschutz, Urheberrecht.',
+  lern: [
+    { h: 'Gute Passwörter', html: `<p>Ein <b>sicheres Passwort</b> ist <b>lang</b> (mindestens 12 Zeichen) und hat <b>Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen</b>.</p><p>Kein Name, kein Geburtstag, kein „123456“. Für jedes Konto ein <b>eigenes</b> Passwort – und es <b>niemandem verraten</b>, auch nicht der besten Freundin.</p><div class="merke">Tipp: Aus einem Satz ein Passwort machen: „Meine Katze Mimi frisst 2 Mal am Tag Fisch!“ → MKMf2MaTF!</div>` },
+    { h: 'Phishing, Daten und Bilder', html: `<p><b>Phishing</b>: Gefälschte Nachrichten oder Webseiten wollen Passwörter oder Daten „abfischen“. Achtung bei Zeitdruck („Sofort!“), Rechtschreibfehlern und seltsamen Absendern. Nie auf solche Links tippen!</p><p><b>Persönliche Daten</b> (Adresse, Telefonnummer, Schule) gehören nicht ins Netz.</p><p><b>Recht am eigenen Bild</b>: Fotos von anderen nur mit deren Erlaubnis posten. <b>Urheberrecht</b>: Bilder, Musik und Texte gehören dem, der sie gemacht hat – nicht einfach kopieren und als eigene ausgeben.</p><div class="oops">Was einmal im Internet ist, bekommt man kaum wieder weg – auch wenn man es löscht.</div>` },
+  ],
+  fragen: [
+    { q: 'Welches Passwort ist am sichersten?', c: ['MKMf2MaTF!', '123456', 'Nicole2014', 'passwort'], a: 'MKMf2MaTF!' },
+    { q: 'Kreuze alles an, was ein sicheres Passwort hat.', m: ['mindestens 12 Zeichen', 'Sonderzeichen', 'Zahlen', 'den eigenen Namen', 'das Geburtsdatum'], a: ['mindestens 12 Zeichen', 'Sonderzeichen', 'Zahlen'] },
+    { q: 'Man sollte für alle Konten dasselbe Passwort verwenden.', tf: false, erk: 'Wird ein Passwort geknackt, wären sonst alle Konten in Gefahr.' },
+    { q: 'Wie nennt man gefälschte Nachrichten, die Passwörter „abfischen“ wollen?', a: 'Phishing', c: ['Streaming', 'Chatten', 'Updaten'] },
+    { q: 'Kreuze alle Warnzeichen für eine Phishing-Nachricht an.', m: ['großer Zeitdruck („sofort!“)', 'viele Rechtschreibfehler', 'seltsamer Absender', 'Nachricht von deiner Lehrerin im Schul-Account über die Hausübung'], a: ['großer Zeitdruck („sofort!“)', 'viele Rechtschreibfehler', 'seltsamer Absender'] },
+    { q: 'Darfst du ein Foto deiner Freundin ohne zu fragen posten?', c: ['Nein – sie muss es erlauben', 'Ja, wenn es lustig ist', 'Ja, wenn sie nicht hinschaut'], a: 'Nein – sie muss es erlauben', erk: 'Das nennt man <b>Recht am eigenen Bild</b>.' },
+    { q: 'Wie heißt das Recht, das Bilder, Musik und Texte ihrer Erschafferin schützt?', a: ['Urheberrecht', 'das Urheberrecht'], c: ['Wahlrecht', 'Strafrecht', 'Fahrrecht'] },
+    { q: 'Was du im Internet löschst, ist sicher für immer weg.', tf: false, erk: 'Andere können es schon gespeichert, kopiert oder einen Screenshot gemacht haben.' },
+    { q: 'Ordne zu: Darf das ins Internet?', pairs: [['meine Wohnadresse', 'nein'], ['mein Lieblingsbuch', 'ja'], ['meine Handynummer', 'nein'], ['ein selbst gemaltes Bild ohne Gesicht', 'ja']] },
+  ],
+});
+</script>
+<script>
 /* ===== Tests & Schularbeiten aus dem Stoff =====
    test({ id: 'bio-test-1', fach: 'biologie', name: 'Bio-Test', date: '2026-12-03', themen: ['bio-wirbeltiere'], info: 'Buch S. 20–31' });
    (Eltern können im Elternbereich zusätzlich eigene Tests eintragen und Termine ändern.) */
@@ -732,7 +773,7 @@ thema('physik', {
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '18.11.2026 20:16';
+const APP_VER = '25.11.2026 14:25';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
@@ -1076,7 +1117,7 @@ function makeTask(qid, level, test = false) {
   if (t.kind === 'choice' && !q.keepOrder && q.kind !== 'tf') t.c = shuffle(t.c);
   if (t.kind === 'multi') t.m = shuffle(q.m);
   if (t.kind === 'order') t.pool = shuffle(q.order.map((x, i) => ({ x, i })));
-  if (t.kind === 'match') t.rights = shuffle(q.pairs.map(p => p[1]));
+  if (t.kind === 'match') t.rights = shuffle([...new Set(q.pairs.map(p => p[1]))]);
   // automatische Tipps, wenn keine im Stoff stehen
   if (t.kind === 'text' && !t.tipp.length) { const a = plain(q.a[0]); t.tipp = [`Es beginnt mit <b>„${esc(a[0])}“</b> …`, `Es hat ${a.length} Zeichen: <b>${esc(a[0])}${'·'.repeat(Math.max(0, a.length - 2))}${a.length > 1 ? esc(a[a.length - 1]) : ''}</b>`]; }
   if (t.kind === 'gap' && !t.tipp.length) t.tipp = [`Anfangsbuchstaben: ${q.gap.map(g => `<b>${esc(String(g).split('|')[0][0])}…</b>`).join(', ')}`];
@@ -1269,7 +1310,7 @@ const VIEWS = {
     let av = edit ? S.profile.avatar : eu ? eu.profile.avatar : AVATARS[0];
     app().innerHTML = `<div class="card center" style="max-width:600px;margin:10px auto;padding:26px 20px">
       <div style="display:flex;justify-content:center">${fuxi('wave', 140, 'bob')}</div><h1 style="margin-top:10px">Hallo! Ich bin Fuxi.</h1>
-      <p style="margin-top:0">Ich bin der schlaue Fuchs und helfe dir, für <b>jeden Test</b> fit zu werden – Deutsch, Englisch, Geografie, Geschichte, Biologie und Physik. Du suchst dir das Fach aus, ich frage dich ab. Fehler sind total erlaubt! 🧡</p>
+      <p style="margin-top:0">Ich bin der schlaue Fuchs und helfe dir, für <b>jeden Test</b> fit zu werden – Deutsch, Englisch, Geografie, Geschichte, Biologie, Physik und Digitale Grundbildung. Du suchst dir das Fach aus, ich frage dich ab. Fehler sind total erlaubt! 🧡</p>
       ${eu ? `<div class="merke" style="text-align:left">Ich kenne dich schon von Euli 🦉 – deinen Namen und dein Tier habe ich übernommen.</div>` : ''}
       <h3 style="margin-top:20px">Wie heißt du?</h3><input class="name-in" id="nm" maxlength="20" placeholder="Dein Name" value="${edit ? esc(S.profile.name) : eu ? esc(eu.profile.name) : ''}">
       <h3 style="margin-top:22px">Such dir ein Tier aus:</h3><div class="avatars">${AVATARS.map(a => `<button data-av="${a}" class="${a === av ? 'on' : ''}" aria-label="Tier ${a}">${a}</button>`).join('')}</div>
