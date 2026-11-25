@@ -414,6 +414,16 @@ body[data-focus] main:has(.kp2){padding-bottom:250px!important}
 .grade{display:inline-block;font-size:44px;font-weight:900;width:84px;height:84px;border-radius:50%;line-height:84px;color:#fff;background:var(--gc,#58cc02);box-shadow:0 5px 0 rgba(0,0,0,.18);margin:6px 0}
 .lern img{max-width:100%;border-radius:14px}
 ul.lern-list{padding-left:22px;margin:8px 0} ul.lern-list li{margin:4px 0}
+/* Excel-Tabellen */
+.xlw{display:inline-block;max-width:100%;overflow-x:auto;text-align:left}
+.xlbar{display:flex;align-items:center;gap:0;border:1px solid #c8c8c8;border-bottom:0;background:#fff;font:15px/1.2 "Segoe UI",Calibri,Arial,sans-serif}
+.xlbar span{padding:5px 8px}.xlbar .nf{min-width:52px;border-right:1px solid #c8c8c8;color:#333}.xlbar .fx{font-style:italic;color:#777;border-right:1px solid #c8c8c8}.xlbar .fv{color:#111}
+table.xl{border-collapse:collapse;font:16px/1.2 Calibri,"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
+table.xl th{background:#f3f3f3;color:#555;font-weight:400;font-size:14px;border:1px solid #d4d4d4;padding:3px 8px;min-width:28px}
+table.xl td{border:1px solid #d4d4d4;padding:4px 10px;min-width:64px;height:26px;white-space:nowrap}
+table.xl td.num{text-align:right}
+table.xl td.sel{background:#e3f1e6}
+table.xl td.hl{outline:2.5px solid #107c41;outline-offset:-2px;background:#fff}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ff6b2c">
@@ -469,7 +479,7 @@ function matchText(input, answers, { exakt = false } = {}) {
     const sq = s => deUml(noArt(s.toLowerCase())).replace(/[\s.\-]/g, '');  // „St.Pölten“ = „St. Pölten“, „100°C“ = „100 °C“
     const x = sq(raw), y = sq(A);
     if (x === y) { if (exakt && noArt(raw) !== noArt(A)) best = best || { r: 'case', a }; else return { r: 'ok', a }; continue; }
-    const tol = y.length >= 9 ? 2 : y.length >= 4 ? 1 : 0, d = lev(x, y);
+    const tol = /\d|^=/.test(y) ? 0 : y.length >= 9 ? 2 : y.length >= 4 ? 1 : 0, d = lev(x, y);  // Zahlen, Zellbezüge, Formeln: genau
     if (d <= tol && (!best || best.r !== 'case')) best = { r: 'typo', a };
   }
   return best;
@@ -552,6 +562,15 @@ function thema(fid, o) {
 }
 /* test({ id, fach, name, date:'JJJJ-MM-TT', themen:[…], info }) – Schularbeiten/Tests aus dem Stoff */
 function test(o) { TESTS_C.push(Object.assign({ themen: [] }, o)); }
+
+/* Kleine Excel-Tabelle als Bild: xl([[A1, B1, …], [A2, B2, …]], { hl: 'B3', fx: '=SUMME(B2:B4)', start: 1 }) */
+function xl(rows, { hl = null, fx = null, start = 1, sel = null } = {}) {
+  rows = rows.map(r => [...r]);
+  const need = (hl || '').match(/^([A-Z])(\d+)$/); if (need) { while (rows.length < +need[2] - start + 1) rows.push([]); }
+  const cols = Math.max(...rows.map(r => r.length), need ? need[1].charCodeAt(0) - 64 : 0), L = i => String.fromCharCode(65 + i);
+  const inSel = (c, r) => { if (!sel) return false; const m = sel.match(/^([A-Z])(\d+):([A-Z])(\d+)$/); return m && c >= m[1].charCodeAt(0) - 65 && c <= m[3].charCodeAt(0) - 65 && r >= +m[2] && r <= +m[4]; };
+  return `<div class="xlw">${fx !== null ? `<div class="xlbar"><span class="nf">${hl || ''}</span><span class="fx">fx</span><span class="fv">${esc(fx)}</span></div>` : ''}<table class="xl"><tr><th></th>${Array.from({ length: cols }, (_, i) => `<th>${L(i)}</th>`).join('')}</tr>${rows.map((r, ri) => { const rn = start + ri; return `<tr><th>${rn}</th>${Array.from({ length: cols }, (_, ci) => { const v = r[ci] ?? '', num = typeof v === 'number' || /^-?[\d.,]+( ?[€%])?$/.test(v); return `<td class="${hl === L(ci) + rn ? 'hl' : ''}${inSel(ci, rn) ? ' sel' : ''}${num ? ' num' : ''}">${typeof v === 'number' ? String(v).replace('.', ',') : v}</td>`; }).join('')}</tr>`; }).join('')}</table></div>`;
+}
 </script>
 <script>
 /* ===== Deutsch ===== */
@@ -727,6 +746,62 @@ thema('physik', {
 </script>
 <script>
 /* ===== Digitale Grundbildung ===== */
+/* --- Excel (gerade in der Schule, Nov. 2026) --- */
+const XL_TG = [['Monat', 'Taschengeld'], ['Jänner', 20], ['Februar', 25], ['März', 15], ['April', 30]];
+const XL_EK = [['Artikel', 'Menge', 'Preis', 'Gesamt'], ['Hefte', 4, '2,00 €', '8,00 €'], ['Stifte', 3, '1,50 €', '4,50 €'], ['Kleber', 2, '3,00 €', '6,00 €']];
+thema('dgb', {
+  id: 'dgb-excel1', title: 'Excel: Aufbau & Formeln', icon: '📊', gruppe: '📊 Excel', aktuell: true, desc: 'Zellen, Zeilen, Spalten, Zellbezüge und die ersten eigenen Formeln.',
+  lern: [
+    { h: 'So ist Excel aufgebaut', html: `<p>Eine Excel-Datei heißt <b>Arbeitsmappe</b>. Sie besteht aus einem oder mehreren <b>Tabellenblättern</b> (die Reiter unten).</p><p><b>Spalten</b> gehen von oben nach unten und haben <b>Buchstaben</b> (A, B, C …). <b>Zeilen</b> gehen von links nach rechts und haben <b>Zahlen</b> (1, 2, 3 …).</p><p>Wo sich Spalte und Zeile treffen, ist eine <b>Zelle</b>. Ihr Name ist der <b>Zellbezug</b> – immer <b>zuerst der Buchstabe, dann die Zahl</b>: hier <b>B3</b>.</p><div>${xl([['', '', ''], ['', '', ''], ['', 'B3', ''], ['', '', '']], { hl: 'B3' })}</div><div class="merke">Spalte = Buchstabe · Zeile = Zahl · Zelle = z. B. B3</div>` },
+    { h: 'Formeln', html: `<p>Eine <b>Formel</b> beginnt <b>immer mit =</b>. Dann rechnet Excel und zeigt in der Zelle das <b>Ergebnis</b>. Die Formel selbst siehst du oben in der <b>Bearbeitungsleiste</b> (fx).</p><p>Rechenzeichen: <b>+</b> plus · <b>−</b> minus · <b>*</b> mal · <b>/</b> geteilt</p><p>Am besten rechnet man mit <b>Zellbezügen</b> statt mit Zahlen: <b>=B2*C2</b>. Ändert sich eine Zahl, rechnet Excel <b>automatisch neu</b>.</p><div>${xl(XL_EK, { hl: 'D2', fx: '=B2*C2' })}</div><div class="merke">Auch in Excel gilt: Punkt vor Strich! =2+3*4 ergibt 14, =(2+3)*4 ergibt 20.</div>` },
+    { h: 'Ausfüllen und Fehlermeldungen', html: `<p>Mit dem kleinen Quadrat rechts unten an der Zelle (<b>Ausfüllkästchen</b>) ziehst du eine Formel nach unten. Excel passt die Zellbezüge dabei an: aus <b>=B2*C2</b> wird in der nächsten Zeile <b>=B3*C3</b>.</p><p><b>#####</b> heißt: Die <b>Spalte ist zu schmal</b> für die Zahl – einfach breiter ziehen.</p><p><b>#DIV/0!</b> heißt: Es wurde <b>durch 0 geteilt</b>.</p><div class="oops">Das = vergessen? Dann schreibt Excel nur den Text „B2*C2“ in die Zelle und rechnet nicht.</div>` },
+  ],
+  fragen: [
+    { q: 'Wie heißt die markierte Zelle?', bild: xl([['', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['', '', '', '']], { hl: 'C4' }), a: ['C4'], c: ['4C', 'D3', 'C3'], falsch: { '4C': 'Fast! Beim Zellbezug kommt zuerst der Buchstabe (Spalte), dann die Zahl (Zeile).' } },
+    { q: 'Wie heißt die markierte Zelle?', bild: xl([['', '', ''], ['', '', ''], ['', '', '']], { hl: 'A2' }), a: ['A2'], c: ['2A', 'B1', 'A1'] },
+    { q: 'Was steht in Zelle B4?', bild: xl(XL_TG), a: ['15'], c: ['30', '25', 'März'] },
+    { q: 'Spalten haben Buchstaben, Zeilen haben Zahlen.', tf: true },
+    { q: 'Wie nennt man die ganze Excel-Datei?', a: ['Arbeitsmappe', 'Mappe'], c: ['Tabellenblatt', 'Zelle', 'Dokument'] },
+    { q: 'Womit beginnt jede Formel in Excel?', a: ['=', 'mit ='], c: ['+', '#', '*'] },
+    { q: 'Ordne die Rechenzeichen zu.', pairs: [['+', 'plus'], ['-', 'minus'], ['*', 'mal'], ['/', 'geteilt']] },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'C2', fx: '=B2+B3' }), a: ['45'], c: ['2023', 'B2+B3', '20'], erk: '20 + 25 = 45' },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'C5', fx: '=B5-B4' }), a: ['15'], c: ['45', '-15', '30'], erk: '30 − 15 = 15' },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'C3', fx: '=B3*2' }), a: ['50'], c: ['27', '25', '52'], erk: '25 · 2 = 50' },
+    { q: 'Was ergibt =2+3*4 ?', a: ['14'], c: ['20', '24', '9'], falsch: { '20': 'Auch Excel rechnet Punkt vor Strich: zuerst 3*4 = 12, dann + 2.' } },
+    { q: 'Was ergibt =(2+3)*4 ?', a: ['20'], c: ['14', '24', '9'] },
+    { q: 'Schreib die Formel für D2: Menge mal Preis.', bild: xl(XL_EK.map((r, i) => i === 1 ? [r[0], r[1], r[2], ''] : r), { hl: 'D2' }), a: ['=B2*C2', '=C2*B2'], tipp: ['Beginne mit = und verwende die Zellbezüge von Menge und Preis.', 'Die Menge steht in B2, der Preis in C2.'] },
+    { q: 'Die Formel =B2*C2 aus D2 wird mit dem Ausfüllkästchen nach D3 gezogen. Was steht dann in D3?', a: ['=B3*C3'], c: ['=B2*C2', '=B3*C2', '=C3*D3'], erk: 'Excel passt beim Ausfüllen die Zeilennummern automatisch an.' },
+    { q: 'In einer Zelle steht <b>#####</b>. Was bedeutet das?', c: ['Die Spalte ist zu schmal', 'Es wurde durch 0 geteilt', 'Die Formel ist falsch', 'Die Datei ist kaputt'], a: 'Die Spalte ist zu schmal' },
+    { q: 'In einer Zelle steht <b>#DIV/0!</b>. Was ist passiert?', c: ['Es wurde durch 0 geteilt', 'Die Spalte ist zu schmal', 'Das = fehlt', 'Die Zahl ist zu groß'], a: 'Es wurde durch 0 geteilt' },
+    { q: 'Bring die Schritte in die richtige Reihenfolge, um eine Formel einzugeben.', order: ['Zelle anklicken', '= eintippen', 'Formel eingeben, z. B. B2+B3', 'Enter drücken'] },
+    { q: 'Wenn man eine Zahl in B2 ändert, rechnet die Formel =B2+B3 automatisch neu.', tf: true },
+  ],
+});
+thema('dgb', {
+  id: 'dgb-excel2', title: 'Excel: Funktionen & Diagramme', icon: '📈', gruppe: '📊 Excel', aktuell: true, desc: 'SUMME, MITTELWERT, MIN, MAX, Bereiche und passende Diagramme.',
+  lern: [
+    { h: 'Funktionen', html: `<p>Für häufige Rechnungen hat Excel fertige <b>Funktionen</b>. Sie beginnen auch mit <b>=</b>, dann kommt der Name und in Klammern der <b>Bereich</b>:</p><p><b>=SUMME(B2:B5)</b> zählt alle Zahlen zusammen</p><p><b>=MITTELWERT(B2:B5)</b> berechnet den Durchschnitt</p><p><b>=MAX(B2:B5)</b> größte Zahl · <b>=MIN(B2:B5)</b> kleinste Zahl · <b>=ANZAHL(B2:B5)</b> wie viele Zahlen</p><div>${xl(XL_TG, { sel: 'B2:B5' })}</div><div class="merke">Der Doppelpunkt heißt „bis“: B2:B5 = B2 bis B5. Die Summe-Funktion gibt es auch als Knopf Σ (AutoSumme).</div>` },
+    { h: 'Diagramme', html: `<p>Mit einem <b>Diagramm</b> sieht man Zahlen auf einen Blick. Zuerst die Daten markieren, dann <b>Einfügen → Diagramm</b>.</p><p><b>Säulendiagramm</b>: Werte <b>vergleichen</b> (Wer hat am meisten?)</p><p><b>Kreisdiagramm</b>: <b>Anteile</b> an einem Ganzen (Wie viel Prozent?)</p><p><b>Liniendiagramm</b>: Entwicklung <b>über die Zeit</b> (Temperatur jeden Tag)</p><div class="merke">Ein gutes Diagramm hat einen Titel und beschriftete Achsen.</div>` },
+  ],
+  fragen: [
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=SUMME(B2:B5)' }), a: ['90'], c: ['80', '30', '4'], erk: '20 + 25 + 15 + 30 = 90' },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MAX(B2:B5)' }), a: ['30'], c: ['15', '90', 'April'] },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MIN(B2:B5)' }), a: ['15'], c: ['20', '30', 'März'] },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MITTELWERT(B2:B5)' }), a: ['22,5', '22.5'], c: ['90', '25', '20'], erk: 'Summe 90 geteilt durch 4 Monate = 22,5' },
+    { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=ANZAHL(B2:B5)' }), a: ['4'], c: ['5', '90', '30'], erk: 'ANZAHL zählt, wie viele Zellen eine Zahl enthalten.' },
+    { q: 'Schreib die Formel, die das Taschengeld von Jänner bis April zusammenzählt.', bild: xl(XL_TG, { hl: 'B6' }), a: ['=SUMME(B2:B5)', '=B2+B3+B4+B5'], tipp: ['Die Funktion für „zusammenzählen“ heißt SUMME.', 'Der Bereich geht von B2 bis B5 – mit Doppelpunkt.'] },
+    { q: 'Schreib die Formel für den Durchschnitt von B2 bis B5.', a: ['=MITTELWERT(B2:B5)'], tipp: ['Durchschnitt heißt in Excel MITTELWERT.'] },
+    { q: 'Welche Zellen gehören zum Bereich <b>A1:A4</b>?', c: ['A1, A2, A3, A4', 'nur A1 und A4', 'A1, B1, C1, D1', 'A1 bis D4'], a: 'A1, A2, A3, A4' },
+    { q: 'Wie viele Zellen hat der Bereich <b>A1:B3</b>?', a: ['6', 'sechs'], c: ['3', '4', '5'], bild: xl([['', '', ''], ['', '', ''], ['', '', '']], { sel: 'A1:B3' }), erk: '2 Spalten × 3 Zeilen = 6 Zellen' },
+    { q: 'Ordne zu: Welche Funktion brauchst du?', pairs: [['alles zusammenzählen', 'SUMME'], ['Durchschnitt', 'MITTELWERT'], ['größter Wert', 'MAX'], ['kleinster Wert', 'MIN']] },
+    { q: 'Ordne zu: Welches Diagramm passt?', pairs: [['Wer hat die meisten Punkte?', 'Säulendiagramm'], ['Wie viel Prozent der Klasse fahren mit dem Bus?', 'Kreisdiagramm'], ['Wie hat sich die Temperatur im Lauf der Woche verändert?', 'Liniendiagramm']] },
+    { q: 'Was muss man machen, bevor man ein Diagramm einfügt?', c: ['Die Daten markieren', 'Die Datei schließen', 'Alle Zahlen löschen', 'Ein neues Tabellenblatt öffnen'], a: 'Die Daten markieren' },
+    { q: 'Kreuze alles an, was ein gutes Diagramm hat.', m: ['einen Titel', 'beschriftete Achsen', 'möglichst viele Farben', 'passende Diagrammart'], a: ['einen Titel', 'beschriftete Achsen', 'passende Diagrammart'] },
+    { q: 'Der Knopf Σ (AutoSumme) fügt die Funktion ___ ein.', gap: ['SUMME'] },
+  ],
+});
+
+/* --- Probe-Stoff --- */
 thema('dgb', {
   id: 'dgb-computer', title: 'Computer-Grundbegriffe', icon: '🖥️', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Hardware, Software, EVA-Prinzip, Speichergrößen.',
   lern: [
@@ -773,7 +848,7 @@ thema('dgb', {
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '25.11.2026 14:25';
+const APP_VER = '25.11.2026 14:37';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
