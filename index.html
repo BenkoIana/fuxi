@@ -415,7 +415,8 @@ body[data-focus] main:has(.kp2){padding-bottom:250px!important}
 .lern img{max-width:100%;border-radius:14px}
 ul.lern-list{padding-left:22px;margin:8px 0} ul.lern-list li{margin:4px 0}
 /* Excel-Tabellen */
-.xlw{display:inline-block;max-width:100%;overflow-x:auto;text-align:left}
+.xlw{display:inline-block;max-width:100%;min-width:0;overflow-x:auto;text-align:left}
+.visual:has(.xlw){flex-direction:column;align-items:center}
 .xlbar{display:flex;align-items:center;gap:0;border:1px solid #c8c8c8;border-bottom:0;background:#fff;font:15px/1.2 "Segoe UI",Calibri,Arial,sans-serif}
 .xlbar span{padding:5px 8px}.xlbar .nf{min-width:52px;border-right:1px solid #c8c8c8;color:#333}.xlbar .fx{font-style:italic;color:#777;border-right:1px solid #c8c8c8}.xlbar .fv{color:#111}
 table.xl{border-collapse:collapse;font:16px/1.2 Calibri,"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
@@ -424,6 +425,8 @@ table.xl td{border:1px solid #d4d4d4;padding:4px 10px;min-width:64px;height:26px
 table.xl td.num{text-align:right}
 table.xl td.sel{background:#e3f1e6}
 table.xl td.hl{outline:2.5px solid #107c41;outline-offset:-2px;background:#fff}
+@media (max-width:600px){table.xl{font-size:14px}table.xl td{padding:3px 6px;min-width:44px;height:24px}table.xl th{padding:2px 5px;font-size:12px}}
+.xl-swipe{font-size:13px;font-weight:800;color:var(--blue-d);text-align:center;margin-top:4px}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ff6b2c">
@@ -470,7 +473,7 @@ function lev(a, b) {
   return p[n];
 }
 /* Ergebnis: 'ok' | 'case' (nur Groß/klein falsch) | 'typo' (fast richtig) | null */
-function matchText(input, answers, { exakt = false } = {}) {
+function matchText(input, answers, { exakt = false, strict = false } = {}) {
   const raw = normAns(input, true); if (!raw) return null;
   let best = null;
   for (const a of answers) {
@@ -479,7 +482,7 @@ function matchText(input, answers, { exakt = false } = {}) {
     const sq = s => deUml(noArt(s.toLowerCase())).replace(/[\s.\-]/g, '');  // „St.Pölten“ = „St. Pölten“, „100°C“ = „100 °C“
     const x = sq(raw), y = sq(A);
     if (x === y) { if (exakt && noArt(raw) !== noArt(A)) best = best || { r: 'case', a }; else return { r: 'ok', a }; continue; }
-    const tol = /\d|^=/.test(y) ? 0 : y.length >= 9 ? 2 : y.length >= 4 ? 1 : 0, d = lev(x, y);  // Zahlen, Zellbezüge, Formeln: genau
+    const tol = strict || /\d|^=/.test(y) ? 0 : y.length >= 9 ? 2 : y.length >= 4 ? 1 : 0, d = lev(x, y);  // Zahlen, Zellbezüge, Formeln: genau
     if (d <= tol && (!best || best.r !== 'case')) best = { r: 'typo', a };
   }
   return best;
@@ -746,11 +749,48 @@ thema('physik', {
 </script>
 <script>
 /* ===== Digitale Grundbildung ===== */
-/* --- Excel (gerade in der Schule, Nov. 2026) --- */
+/* --- Excel-Aufgabe „App-Bewertung“ (Arbeitsauftrag der Lehrerin, Nov. 2026) --- */
+const XL_APP = [['App-Name', 'Nützlichkeit', 'Spaßfaktor', 'Sicherheit', 'Benutzerfreundlichkeit', 'Werbung', 'Kosten', 'Nutzungsdauer'],
+  ['Lern-App', '★★★★★', '★★★', '★★★★', '★★★★', 'wenig', 'gratis', '15 min'], ['Spiele-App', '★★', '★★★★★', '★★', '★★★★', 'viel', 'In-App-Käufe', '45 min'], ['Wetter-App', '★★★★', '★', '★★★', '★★★★★', 'mittel', 'gratis', '2 min']];
+thema('dgb', {
+  id: 'dgb-appbewertung', title: 'Excel: App-Bewertung', icon: '📱', gruppe: '📊 Excel', aktuell: true, src: 'Arbeitsauftrag App-Bewertung',
+  desc: 'Tabelle mit 8 Spalten anlegen, Apps bewerten, Bilder einfügen, Screenshot in OneNote.',
+  lern: [
+    { h: 'Die Aufgabe', html: `<p>Ihr erstellt in Excel eine <b>Tabelle mit 8 Spalten</b> und <b>mindestens 8 Zeilen</b>.</p><p>In <b>Zeile 1</b> stehen die <b>Überschriften</b>. Darunter kommen <b>mindestens 7 Apps</b> – jede App bekommt eine eigene Zeile. 1 + 7 = 8 Zeilen.</p><p>Die 8 Spalten gehen von <b>A bis H</b>: App-Name · Nützlichkeit · Spaßfaktor · Sicherheit · Benutzerfreundlichkeit · Werbung · Kosten · Nutzungsdauer</p><div>${xl(XL_APP)}</div><div class="merke">Eine Zeile = eine App · Eine Spalte = ein Merkmal</div>` },
+    { h: 'Was bedeuten die Spalten?', html: `<p><b>Nützlichkeit</b>: Hilft mir die App wirklich weiter?</p><p><b>Spaßfaktor</b>: Macht es Freude, sie zu benutzen?</p><p><b>Sicherheit</b>: Schützt die App meine Daten? Will sie nur die Berechtigungen, die sie wirklich braucht (Kamera, Standort, Kontakte)? Können mich Fremde anschreiben?</p><p><b>Benutzerfreundlichkeit</b>: Ist sie leicht zu bedienen, findet man sich schnell zurecht?</p><p><b>Werbung</b>: Wie viel Werbung kommt? · <b>Kosten</b>: gratis, einmal bezahlen, Abo oder <b>In-App-Käufe</b>? · <b>Nutzungsdauer</b>: Wie lange verwende ich sie (z. B. pro Tag)?</p><div class="oops">„Gratis“ heißt nicht immer kostenlos: Viele Gratis-Apps verdienen mit Werbung, In-App-Käufen oder mit deinen Daten.</div>` },
+    { h: 'Bilder, Screenshot und OneNote', html: `<p><b>Bild einfügen</b> in Excel: Registerkarte <b>Einfügen → Bilder</b> und das Bild auswählen (z. B. ein Logo oder Screenshot der App).</p><p><b>Screenshot</b> = ein Foto vom Bildschirm. Die Taste <b>Druck</b> (rechts oben auf der Tastatur) kopiert den Bildschirm in die <b>Zwischenablage</b>.</p><p>Mit <b>Strg + V</b> fügst du ihn dann ein – hier in <b>OneNote</b> auf einer <b>neuen Seite</b> mit dem Namen <b>„App Bewertung“</b>.</p><div class="merke">Strg + C = kopieren · Strg + V = einfügen · Strg + X = ausschneiden · Strg + Z = rückgängig</div><p>OneNote ist aufgebaut wie ein Ordner: <b>Notizbuch → Abschnitte → Seiten</b>.</p>` },
+  ],
+  fragen: [
+    { q: 'Wie viele Spalten hat eure App-Tabelle?', a: ['8', 'acht'], c: ['7', '6', '10'] },
+    { q: 'In welche Zeile kommen die Überschriften?', a: ['1', 'Zeile 1', 'in Zeile 1', 'erste Zeile', 'die erste'], c: ['in die letzte Zeile', '2', '8'] },
+    { q: 'Ihr bewertet 7 Apps und habt eine Zeile mit Überschriften. Wie viele Zeilen hat die Tabelle?', a: ['8', 'acht'], c: ['7', '9', '14'], erk: '1 Zeile Überschriften + 7 Zeilen Apps = 8 Zeilen' },
+    { q: 'Die Tabelle hat 8 Spalten und beginnt bei A. Bei welchem Buchstaben endet sie?', a: ['H'], c: ['G', 'I', 'J'], erk: 'A B C D E F G H – das sind 8.' },
+    { q: 'In welcher Zelle steht die Überschrift „Werbung“?', bild: xl(XL_APP), a: ['F1'], c: ['1F', 'E1', 'F2'] },
+    { q: 'In welcher Zelle steht die Überschrift „Kosten“?', bild: xl(XL_APP), a: ['G1'], c: ['1G', 'F1', 'H1'] },
+    { q: 'Was steht in Zelle G3?', bild: xl(XL_APP), a: ['In-App-Käufe'], c: ['gratis', 'viel', '45 min'] },
+    { q: 'Ordne zu: Was wird in der Spalte bewertet?', pairs: [['Nützlichkeit', 'Hilft mir die App weiter?'], ['Benutzerfreundlichkeit', 'Ist sie leicht zu bedienen?'], ['Sicherheit', 'Schützt sie meine Daten?'], ['Nutzungsdauer', 'Wie lange verwende ich sie?']] },
+    { q: 'Ordne zu: Was wird in der Spalte bewertet?', pairs: [['Spaßfaktor', 'Macht sie Freude?'], ['Werbung', 'Wie viel Werbung kommt?'], ['Kosten', 'Gratis, Abo oder In-App-Käufe?']] },
+    { q: 'Eine App ist leicht zu bedienen und man findet sich sofort zurecht. Welche Spalte ist das?', a: ['Benutzerfreundlichkeit'], c: ['Nützlichkeit', 'Spaßfaktor', 'Sicherheit'] },
+    { q: 'Eine Taschenlampen-App will Zugriff auf deine Kontakte und deinen Standort. In welcher Spalte gibst du dafür weniger Punkte?', a: ['Sicherheit'], c: ['Spaßfaktor', 'Kosten', 'Nutzungsdauer'], erk: 'Eine Taschenlampe braucht weder Kontakte noch Standort – das ist ein Warnzeichen.' },
+    { q: 'Kreuze an, was du bei der <b>Sicherheit</b> einer App prüfen solltest.', m: ['welche Berechtigungen sie will', 'ob Fremde mich anschreiben können', 'was mit meinen Daten passiert', 'welche Farbe das Logo hat'], a: ['welche Berechtigungen sie will', 'ob Fremde mich anschreiben können', 'was mit meinen Daten passiert'] },
+    { q: 'Eine Gratis-App kann trotzdem Geld kosten.', tf: true, erk: 'Zum Beispiel durch In-App-Käufe oder ein Abo.' },
+    { q: 'Wie fügst du in Excel ein Bild ein?', c: ['Einfügen → Bilder', 'Datei → Speichern', 'Start → Fett', 'Ansicht → Zoom'], a: 'Einfügen → Bilder' },
+    { q: 'Wie heißt die Taste für einen Screenshot (rechts oben auf der Tastatur)?', a: ['Druck', 'Druck-Taste', 'Drucktaste', 'Print Screen', 'PrtSc', 'Druck S-Abf'], c: ['Entf', 'Esc', 'Pos1'] },
+    { q: 'Wohin kommt der Screenshot, wenn du die Druck-Taste drückst?', c: ['in die Zwischenablage', 'direkt in den Drucker', 'in den Papierkorb', 'auf den Desktop als Datei'], a: 'in die Zwischenablage', falsch: { 'direkt in den Drucker': 'Die Taste heißt zwar „Druck“, aber sie druckt nichts aus – sie kopiert den Bildschirm.' } },
+    { q: 'Mit welcher Tastenkombination fügst du den Screenshot ein?', a: ['Strg+V', 'Strg + V', 'Ctrl+V', 'Strg V'], c: ['Strg+C', 'Strg+Z', 'Strg+X'], genau: true },
+    { q: 'Ordne die Tastenkombinationen zu.', pairs: [['Strg + C', 'kopieren'], ['Strg + V', 'einfügen'], ['Strg + X', 'ausschneiden'], ['Strg + Z', 'rückgängig']] },
+    { q: 'Die neue Seite in OneNote soll so heißen: ___', gap: ['App Bewertung|App-Bewertung|AppBewertung'], tipp: ['Zwei Wörter: zuerst „App“ …'] },
+    { q: 'Ordne von groß nach klein: Wie ist OneNote aufgebaut?', order: ['Notizbuch', 'Abschnitt', 'Seite'] },
+    { q: 'Bring die Aufgabe in die richtige Reihenfolge.', order: ['Excel öffnen', 'Überschriften in Zeile 1 schreiben', 'mindestens 7 Apps bewerten', 'zwei Bilder einfügen', 'Screenshot mit der Druck-Taste', 'in OneNote auf der neuen Seite mit Strg + V einfügen'] },
+    { q: 'Ein Screenshot ist ein Foto vom Bildschirm.', tf: true },
+  ],
+});
+
+/* --- Excel: Formeln und Funktionen (vorbereitet, noch nicht im Unterricht) --- */
 const XL_TG = [['Monat', 'Taschengeld'], ['Jänner', 20], ['Februar', 25], ['März', 15], ['April', 30]];
 const XL_EK = [['Artikel', 'Menge', 'Preis', 'Gesamt'], ['Hefte', 4, '2,00 €', '8,00 €'], ['Stifte', 3, '1,50 €', '4,50 €'], ['Kleber', 2, '3,00 €', '6,00 €']];
 thema('dgb', {
-  id: 'dgb-excel1', title: 'Excel: Aufbau & Formeln', icon: '📊', gruppe: '📊 Excel', aktuell: true, desc: 'Zellen, Zeilen, Spalten, Zellbezüge und die ersten eigenen Formeln.',
+  id: 'dgb-excel1', title: 'Excel: Aufbau & Formeln', icon: '📊', gruppe: '📊 Excel', desc: 'Zellen, Zeilen, Spalten, Zellbezüge und die ersten eigenen Formeln.',
   lern: [
     { h: 'So ist Excel aufgebaut', html: `<p>Eine Excel-Datei heißt <b>Arbeitsmappe</b>. Sie besteht aus einem oder mehreren <b>Tabellenblättern</b> (die Reiter unten).</p><p><b>Spalten</b> gehen von oben nach unten und haben <b>Buchstaben</b> (A, B, C …). <b>Zeilen</b> gehen von links nach rechts und haben <b>Zahlen</b> (1, 2, 3 …).</p><p>Wo sich Spalte und Zeile treffen, ist eine <b>Zelle</b>. Ihr Name ist der <b>Zellbezug</b> – immer <b>zuerst der Buchstabe, dann die Zahl</b>: hier <b>B3</b>.</p><div>${xl([['', '', ''], ['', '', ''], ['', 'B3', ''], ['', '', '']], { hl: 'B3' })}</div><div class="merke">Spalte = Buchstabe · Zeile = Zahl · Zelle = z. B. B3</div>` },
     { h: 'Formeln', html: `<p>Eine <b>Formel</b> beginnt <b>immer mit =</b>. Dann rechnet Excel und zeigt in der Zelle das <b>Ergebnis</b>. Die Formel selbst siehst du oben in der <b>Bearbeitungsleiste</b> (fx).</p><p>Rechenzeichen: <b>+</b> plus · <b>−</b> minus · <b>*</b> mal · <b>/</b> geteilt</p><p>Am besten rechnet man mit <b>Zellbezügen</b> statt mit Zahlen: <b>=B2*C2</b>. Ändert sich eine Zahl, rechnet Excel <b>automatisch neu</b>.</p><div>${xl(XL_EK, { hl: 'D2', fx: '=B2*C2' })}</div><div class="merke">Auch in Excel gilt: Punkt vor Strich! =2+3*4 ergibt 14, =(2+3)*4 ergibt 20.</div>` },
@@ -778,7 +818,7 @@ thema('dgb', {
   ],
 });
 thema('dgb', {
-  id: 'dgb-excel2', title: 'Excel: Funktionen & Diagramme', icon: '📈', gruppe: '📊 Excel', aktuell: true, desc: 'SUMME, MITTELWERT, MIN, MAX, Bereiche und passende Diagramme.',
+  id: 'dgb-excel2', title: 'Excel: Funktionen & Diagramme', icon: '📈', gruppe: '📊 Excel', desc: 'SUMME, MITTELWERT, MIN, MAX, Bereiche und passende Diagramme.',
   lern: [
     { h: 'Funktionen', html: `<p>Für häufige Rechnungen hat Excel fertige <b>Funktionen</b>. Sie beginnen auch mit <b>=</b>, dann kommt der Name und in Klammern der <b>Bereich</b>:</p><p><b>=SUMME(B2:B5)</b> zählt alle Zahlen zusammen</p><p><b>=MITTELWERT(B2:B5)</b> berechnet den Durchschnitt</p><p><b>=MAX(B2:B5)</b> größte Zahl · <b>=MIN(B2:B5)</b> kleinste Zahl · <b>=ANZAHL(B2:B5)</b> wie viele Zahlen</p><div>${xl(XL_TG, { sel: 'B2:B5' })}</div><div class="merke">Der Doppelpunkt heißt „bis“: B2:B5 = B2 bis B5. Die Summe-Funktion gibt es auch als Knopf Σ (AutoSumme).</div>` },
     { h: 'Diagramme', html: `<p>Mit einem <b>Diagramm</b> sieht man Zahlen auf einen Blick. Zuerst die Daten markieren, dann <b>Einfügen → Diagramm</b>.</p><p><b>Säulendiagramm</b>: Werte <b>vergleichen</b> (Wer hat am meisten?)</p><p><b>Kreisdiagramm</b>: <b>Anteile</b> an einem Ganzen (Wie viel Prozent?)</p><p><b>Liniendiagramm</b>: Entwicklung <b>über die Zeit</b> (Temperatur jeden Tag)</p><div class="merke">Ein gutes Diagramm hat einen Titel und beschriftete Achsen.</div>` },
@@ -848,7 +888,7 @@ thema('dgb', {
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '25.11.2026 14:37';
+const APP_VER = '25.11.2026 15:05';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
@@ -1216,7 +1256,7 @@ function answerHTML(t) {
 function evaluate(t, box, picked) {
   const spell = FACH[THEMA[t.thema].fach].spell;
   const textRes = (input, answers) => {
-    const m = matchText(input, answers, { exakt: t.exakt });
+    const m = matchText(input, answers, { exakt: t.exakt, strict: t.genau });
     if (!m) return { ok: false, trap: trapFor(t, input) };
     if (m.r === 'ok') return { ok: true };
     if (m.r === 'case') return { partial: 'Fast! 👍 Schau nochmal: <b>groß oder klein</b> geschrieben?' };
@@ -1326,6 +1366,7 @@ function mountTask(box, t, { onResult, onNext, nextLabel = 'Weiter ➜', test = 
   const txt = $$('input', box);
   txt.forEach((i, k) => i.addEventListener('keydown', e => { if (e.key !== 'Enter') return; e.preventDefault(); if (k < txt.length - 1 && !txt[k + 1].value) txt[k + 1].focus(); else check(); }));
   setTimeout(() => txt[0]?.focus({ preventScroll: true }), 80);
+  swipeHints(box);
   if (S.settings.autoread && !test) setTimeout(() => say(t.q), 300);
 }
 
@@ -1344,6 +1385,8 @@ function record(t, r) {
   checkBadges(); header();
 }
 
+// Breite Tabellen am Handy: Hinweis zum Wischen
+function swipeHints(root) { setTimeout(() => $$('.xlw', root).forEach(w => { if (w.scrollWidth > w.clientWidth + 4 && !(w.nextElementSibling && w.nextElementSibling.classList.contains('xl-swipe'))) w.insertAdjacentHTML('afterend', '<div class="xl-swipe">👉 Die Tabelle ist breiter – zur Seite wischen</div>'); }), 50); }
 /* ---------- Fragen auswählen ---------- */
 // Fragen, die noch nicht sitzen oder lange nicht dran waren, kommen öfter
 function qWeight(id) {
@@ -1488,7 +1531,8 @@ const VIEWS = {
     let shown = parts.length > 2 ? 1 : parts.length;
     const paint = () => { parts.forEach((el, k) => el.classList.toggle('later', k >= shown)); $('#next').textContent = shown < parts.length ? 'Weiter ▾' : i === slides.length - 1 ? 'Fertig – jetzt üben! 🚀' : 'Weiter'; };
     if (parts.length > 2) paint();
-    const reveal = () => { if (shown >= parts.length) return false; const el = parts[shown++]; paint(); el.classList.add('appear'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (S.settings.autoread) say(el.innerHTML); return true; };
+    swipeHints($('#sb'));
+    const reveal = () => { if (shown >= parts.length) return false; const el = parts[shown++]; paint(); el.classList.add('appear'); swipeHints(el); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); if (S.settings.autoread) say(el.innerHTML); return true; };
     if (S.settings.autoread) say(sl.h + '. ' + (parts.length ? parts.slice(0, shown).map(e => e.innerHTML).join(' ') : ''));
     $('#next').onclick = () => reveal() || next();
     const sb = $('#sb');
