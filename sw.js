@@ -1,5 +1,5 @@
 // Fuxi offline: App-Dateien zwischenspeichern, neue Version im Hintergrund holen
-const CACHE = 'fuxi-7e849ebca9';
+const CACHE = 'fuxi-54661c6483';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); });
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('fuxi-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));

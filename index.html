@@ -465,7 +465,8 @@ function normAns(s, keepCase = false) {
   return s;
 }
 const deUml = s => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue');
-const noArt = s => s.replace(/^(der|die|das|den|dem|des|ein|eine|einen|the|a|an|to) /i, '');
+// „in der Jungsteinzeit“ = „Jungsteinzeit“, „als Nomaden“ = „Nomaden“, „mit =“ = „=“
+const noArt = s => s.replace(/^(?:(?:in|im|an|am|aus|mit|als|durch|bei|zur|zum|von|vom|auf)\s+)?(?:(?:der|die|das|den|dem|des|ein|eine|einen|einem|einer)\s+)?/i, '').replace(/^(the|a|an|to) /i, '');
 function lev(a, b) {
   if (a === b) return 0; const m = a.length, n = b.length; if (!m || !n) return m || n;
   let p = Array.from({ length: n + 1 }, (_, j) => j);
@@ -473,15 +474,21 @@ function lev(a, b) {
   return p[n];
 }
 /* Ergebnis: 'ok' | 'case' (nur Groß/klein falsch) | 'typo' (fast richtig) | null */
-function matchText(input, answers, { exakt = false, strict = false } = {}) {
+// Vergleichsform: Groß/klein, Umlaute, Artikel/Präposition, Leerzeichen egal; Punkt/Bindestrich nur zwischen Buchstaben egal
+// (Minus und Kommastellen bei Zahlen bleiben erhalten: „−15“ ≠ „15“, „225“ ≠ „22.5“)
+const sqAns = s => deUml(noArt(normAns(s, true).toLowerCase())).replace(/[−–]/g, '-').replace(/\s+/g, '').replace(/(?<=[a-zß])[.\-](?=[a-zß])|\.(?=$)/g, '');
+function matchText(input, answers, { exakt = false, strict = false, avoid = [] } = {}) {
   const raw = normAns(input, true); if (!raw) return null;
+  const x = sqAns(raw);
+  // genau eine andere Antwortmöglichkeit eingegeben (z. B. „brought“ statt „bought“) → falsch, kein Tippfehler
+  const isOther = avoid.some(o => sqAns(o) === x) && !answers.some(a => sqAns(a) === x);
   let best = null;
   for (const a of answers) {
     const A = normAns(a, true);
     if (raw === A) return { r: 'ok', a };
-    const sq = s => deUml(noArt(s.toLowerCase())).replace(/[\s.\-]/g, '');  // „St.Pölten“ = „St. Pölten“, „100°C“ = „100 °C“
-    const x = sq(raw), y = sq(A);
+    const y = sqAns(A);
     if (x === y) { if (exakt && noArt(raw) !== noArt(A)) best = best || { r: 'case', a }; else return { r: 'ok', a }; continue; }
+    if (isOther) continue;
     const tol = strict || /\d|^=/.test(y) ? 0 : y.length >= 9 ? 2 : y.length >= 4 ? 1 : 0, d = lev(x, y);  // Zahlen, Zellbezüge, Formeln: genau
     if (d <= tol && (!best || best.r !== 'case')) best = { r: 'typo', a };
   }
@@ -590,7 +597,7 @@ thema('deutsch', {
     { q: 'Welche Wortart ist „wir“?', c: ['Nomen', 'Artikel', 'Adjektiv', 'Pronomen'], a: 'Pronomen' },
     { q: 'Kreuze alle <b>Nomen</b> an.', m: ['Angst', 'laufen', 'Tisch', 'grün', 'das Lachen', 'schnell'], a: ['Angst', 'Tisch', 'das Lachen'], erk: '„Lachen“ wird mit Artikel zum Nomen.' },
     { q: 'Kreuze alle <b>Adjektive</b> an.', m: ['laut', 'Baum', 'freundlich', 'singen', 'kalt'], a: ['laut', 'freundlich', 'kalt'] },
-    { q: 'Steigere: schön – schöner – ___', gap: ['am schönsten|schönsten'], erk: 'Grundstufe – Mehrstufe (Komparativ) – Meiststufe (Superlativ).' },
+    { q: 'Steigere: schön – schöner – am ___', gap: ['schönsten'], erk: 'Grundstufe – Mehrstufe (Komparativ) – Meiststufe (Superlativ).' },
     { q: 'Steigere: gut – ___ – am besten', gap: ['besser'], falsch: { 'guter': 'Das ist eine Ausnahme! gut – besser – am besten.' } },
     { q: 'Nomen werden immer großgeschrieben.', tf: true },
     { q: '„ein“ und „eine“ sind bestimmte Artikel.', tf: false, erk: 'Das sind die <b>unbestimmten</b> Artikel. Bestimmt sind: der, die, das.' },
@@ -630,7 +637,7 @@ thema('englisch', {
     { q: 'Yesterday I ___ (go) to the cinema.', gap: ['went'], falsch: { 'goed': '„go“ ist unregelmäßig: go → went.' } },
     { q: 'Last summer we ___ (swim) in the lake every day.', gap: ['swam'] },
     { q: 'She ___ (buy) a new bike two weeks ago.', gap: ['bought'] },
-    { q: 'They ___ (play) football after school.', gap: ['played'], erk: '„play“ ist regelmäßig: play → played.' },
+    { q: 'Yesterday they ___ (play) football after school.', gap: ['played'], erk: '„play“ ist regelmäßig: play → played.' },
     { q: 'Welche Form ist <b>falsch</b>?', c: ['I saw', 'I eated', 'I ran', 'I wrote'], a: 'I eated', erk: 'eat → <b>ate</b>.' },
     { q: 'Welches Wort ist ein Signalwort für das simple past?', c: ['yesterday', 'tomorrow', 'now', 'always'], a: 'yesterday' },
   ],
@@ -645,7 +652,7 @@ thema('geografie', {
   ],
   karten: {
     f: 'Wie heißt die Landeshauptstadt des Bundeslandes {0}?', r: '{1} ist die Landeshauptstadt welches Bundeslandes?',
-    list: [['Wien', 'Wien'], ['Niederösterreich', 'St. Pölten|Sankt Pölten|St Pölten'], ['Burgenland', 'Eisenstadt'], ['Steiermark', 'Graz'], ['Oberösterreich', 'Linz'], ['Salzburg', 'Salzburg'], ['Kärnten', 'Klagenfurt|Klagenfurt am Wörthersee'], ['Tirol', 'Innsbruck'], ['Vorarlberg', 'Bregenz']],
+    list: [['Niederösterreich', 'St. Pölten|Sankt Pölten|St Pölten'], ['Burgenland', 'Eisenstadt'], ['Steiermark', 'Graz'], ['Oberösterreich', 'Linz'], ['Salzburg', 'Salzburg'], ['Kärnten', 'Klagenfurt|Klagenfurt am Wörthersee'], ['Tirol', 'Innsbruck'], ['Vorarlberg', 'Bregenz']],
   },
   fragen: [
     { q: 'Wie viele Bundesländer hat Österreich?', a: ['9', 'neun'], c: ['7', '8', '10'] },
@@ -680,13 +687,13 @@ thema('geschichte', {
     { h: 'Jungsteinzeit und Metallzeit', html: `<p>In der <b>Jungsteinzeit</b> wurden die Menschen <b>sesshaft</b>: Sie betrieben <b>Ackerbau und Viehzucht</b>, bauten Häuser und töpferten.</p><p>In der <b>Metallzeit</b> lernten sie, Metalle zu verarbeiten: zuerst <b>Kupfer</b>, dann <b>Bronze</b> (Kupfer + Zinn), dann <b>Eisen</b>.</p><div class="merke"><b>Ötzi</b> ist eine etwa 5 300 Jahre alte Gletschermumie aus den Ötztaler Alpen. Er lebte in der Kupferzeit.</div>` },
   ],
   fragen: [
-    { q: 'Wie lebten die Menschen in der Altsteinzeit?', a: ['als Jäger und Sammler', 'Jäger und Sammler'], c: ['als Bauern', 'in Städten', 'als Händler'] },
+    { q: 'Wie lebten die Menschen in der Altsteinzeit?', a: ['als Jäger und Sammler', 'Jäger und Sammler', 'Nomaden', 'als Nomaden', 'Jäger und Sammlerinnen'], c: ['als Bauern', 'in Städten', 'als Händler'] },
     { q: 'Wie nennt man Menschen, die von Ort zu Ort ziehen?', a: 'Nomaden', c: ['Bauern', 'Römer', 'Siedler'] },
-    { q: 'In welcher Zeit wurden die Menschen sesshaft?', a: 'Jungsteinzeit', c: ['Altsteinzeit', 'Eisenzeit', 'Bronzezeit'] },
+    { q: 'In welcher Zeit wurden die Menschen sesshaft?', a: ['Jungsteinzeit', 'Neolithikum'], c: ['Altsteinzeit', 'Eisenzeit', 'Bronzezeit'] },
     { q: 'Bronze ist eine Mischung aus Kupfer und ___.', gap: ['Zinn'] },
     { q: 'Ordne die Zeitabschnitte: der älteste zuerst.', order: ['Altsteinzeit', 'Jungsteinzeit', 'Kupferzeit', 'Bronzezeit', 'Eisenzeit'] },
     { q: 'Wie alt ist Ötzi ungefähr?', c: ['500 Jahre', '2 000 Jahre', '5 300 Jahre', '50 000 Jahre'], a: '5 300 Jahre' },
-    { q: 'Kreuze alles an, was die Menschen in der Jungsteinzeit neu machten.', m: ['Ackerbau', 'Viehzucht', 'Häuser bauen', 'Eisen schmieden', 'Bücher drucken'], a: ['Ackerbau', 'Viehzucht', 'Häuser bauen'] },
+    { q: 'Kreuze alles an, was die Menschen in der Jungsteinzeit neu machten.', m: ['Ackerbau', 'Viehzucht', 'feste Häuser bauen', 'Eisen schmieden', 'Bücher drucken'], a: ['Ackerbau', 'Viehzucht', 'feste Häuser bauen'] },
     { q: 'Die Venus von Willendorf wurde in Niederösterreich gefunden.', tf: true },
   ],
 });
@@ -731,7 +738,7 @@ thema('biologie', {
   fragen: [
     { q: 'Kreuze die drei Grundteile einer Pflanze an.', m: ['Wurzel', 'Stamm oder Stängel', 'Blätter', 'Kambium', 'Zapfen'], a: ['Wurzel', 'Stamm oder Stängel', 'Blätter'] },
     { q: 'Kreuze alle Aufgaben der <b>Wurzel</b> an.', m: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke', 'Fotosynthese', 'Insekten anlocken'], a: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke'] },
-    { q: 'Nenne eine Pflanze, deren Wurzel Stärke speichert.', a: ['Karotte', 'Zuckerrübe', 'Karotten', 'Möhre', 'Rübe', 'Zuckerrüben', 'Möhren', 'Rote Rübe'], c: ['Tulpe', 'Fichte', 'Gras'], falsch: { 'Kartoffel': 'Gute Idee, aber die Kartoffel ist eine Knolle am Spross, keine Wurzel. Im Heft stehen Karotte und Zuckerrübe.' } },
+    { q: 'Die Wurzel kann ein Speicherorgan sein. Nenne ein Beispiel aus dem Heft.', a: ['Karotte', 'Zuckerrübe', 'Karotten', 'Möhre', 'Rübe', 'Zuckerrüben', 'Möhren', 'Rote Rübe', 'Gelbe Rübe', 'Gelbe Rüben', 'Rote Rüben', 'Rettich', 'Radieschen', 'Pastinake', 'Sellerie'], c: ['Tulpe', 'Fichte', 'Gras'], falsch: { 'Kartoffel': 'Gute Idee, aber die Kartoffel ist eine Knolle am Spross, keine Wurzel. Im Heft stehen Karotte und Zuckerrübe.' } },
     { q: 'In welche Richtung fließt das <b>Wasser</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von unten nach oben' },
     { q: 'In welche Richtung fließt der <b>Zucker</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von oben nach unten', erk: 'Der Zucker entsteht in den Blättern und wird nach unten verteilt.' },
     { q: 'Kreuze alle Aufgaben des <b>Stammes</b> an.', m: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker', 'nimmt Wasser aus dem Boden auf'], a: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker'], erk: 'Wasser aus dem Boden aufnehmen – das macht die Wurzel.' },
@@ -768,8 +775,8 @@ thema('biologie', {
     { q: 'Ergänze die Fotosynthese: Kohlenstoffdioxid + ___ + Sonnenlicht → Zucker + ___', gap: ['Wasser', 'Sauerstoff'] },
     { q: 'Was <b>entsteht</b> bei der Fotosynthese?', m: ['Zucker', 'Sauerstoff', 'Kohlenstoffdioxid', 'Wasser'], a: ['Zucker', 'Sauerstoff'], erk: 'Kohlenstoffdioxid und Wasser werden <b>verbraucht</b>.' },
     { q: 'Was <b>braucht</b> die Pflanze für die Fotosynthese?', m: ['Kohlenstoffdioxid', 'Wasser', 'Sonnenlicht', 'Zucker'], a: ['Kohlenstoffdioxid', 'Wasser', 'Sonnenlicht'] },
-    { q: 'Wie heißt der grüne Blattfarbstoff?', a: ['Chlorophyll'], c: ['Chloroplast', 'Kambium', 'Humus'] },
-    { q: 'Wie heißen die kleinen Räume in der Pflanzenzelle, in denen die Fotosynthese stattfindet?', a: ['Chloroplasten', 'Chloroplast'], c: ['Chlorophyll', 'Blattporen', 'Blattadern'], falsch: { 'Chlorophyll': 'Chlorophyll ist der grüne Farbstoff – er steckt <b>in</b> den Chloroplasten.' } },
+    { q: 'Wie heißt der grüne Blattfarbstoff?', a: ['Chlorophyll', 'Blattgrün'], c: ['Chloroplast', 'Kambium', 'Humus'] },
+    { q: 'Wie heißen die kleinen Räume in der Pflanzenzelle, in denen die Fotosynthese stattfindet?', a: ['Chloroplasten', 'Chloroplast', 'Blattgrünkörner', 'Blattgrünkörnchen'], c: ['Chlorophyll', 'Blattporen', 'Blattadern'], falsch: { 'Chlorophyll': 'Chlorophyll ist der grüne Farbstoff – er steckt <b>in</b> den Chloroplasten.' } },
     { q: 'Was macht das Chlorophyll?', c: ['Es nimmt das Sonnenlicht auf', 'Es transportiert Wasser', 'Es hält das Blatt am Zweig fest', 'Es lockt Bienen an'], a: 'Es nimmt das Sonnenlicht auf' },
     { q: 'Was nimmt die Pflanze bei der <b>Atmung</b> auf?', a: ['Sauerstoff'], c: ['Kohlenstoffdioxid', 'Zucker', 'Sonnenlicht'], falsch: { 'Kohlenstoffdioxid': 'Das ist bei der Fotosynthese so. Bei der Atmung ist es umgekehrt: Sauerstoff hinein, Kohlenstoffdioxid hinaus.' } },
     { q: 'Ordne zu: Was passiert?', pairs: [['Verdunstung', 'Wasser geht über die Blattporen hinaus'], ['Atmung', 'Sauerstoff auf, Kohlenstoffdioxid ab'], ['Fotosynthese', 'mit Licht Zucker herstellen']] },
@@ -788,19 +795,19 @@ thema('biologie', {
     { h: 'Warum werfen Bäume die Blätter ab?', html: `<p><b>1. Schutz gegen Austrocknung</b>: Aus gefrorenem Boden kann der Baum kein Wasser aufnehmen. Über die Blätter würde er aber weiter Wasser verdunsten.</p><p><b>2. Schutz vor Frostsprengung</b>: Wasser würde in den Blättern gefrieren. Eis dehnt sich aus, die Pflanzenzellen würden <b>platzen</b>.</p><p><b>Winterharte Pflanzen</b> haben eine Art „Frostschutzmittel“ in den Blättern.</p><div class="oops">Nicht vertauschen: <b>Lichtmenge</b> = kürzere Tage, der Auslöser ganz am Anfang. <b>Frostsprengung</b> = Zellen platzen durch Eis, ein Grund für den Laubfall.</div>` },
   ],
   fragen: [
-    { q: 'Der Laubabfall wird durch die verringerte ___ (= kürzere Tage) gesteuert.', gap: ['Lichtmenge'], falsch: { 'Frostsprengung': 'Die Frostsprengung kommt später bei „Schutz vor …“. Kürzere Tage = weniger Licht → Lichtmenge.' } },
-    { q: 'Der grüne Blattfarbstoff, das ___, zerfällt allmählich.', gap: ['Chlorophyll'] },
-    { q: 'Wenn das Chlorophyll zerfällt, werden andere ___ wie gelb, orange und rot sichtbar.', gap: ['Blattfarbstoffe|Farbstoffe'] },
+    { q: 'Der Laubabfall wird durch die verringerte ___ (= kürzere Tage) gesteuert.', gap: ['Lichtmenge|Tageslänge|Lichtdauer|Tageslichtdauer'], falsch: { 'Frostsprengung': 'Die Frostsprengung kommt später bei „Schutz vor …“. Kürzere Tage = weniger Licht → Lichtmenge.' } },
+    { q: 'Der grüne Blattfarbstoff, das ___, zerfällt allmählich.', gap: ['Chlorophyll|Blattgrün'] },
+    { q: 'Wenn das Chlorophyll zerfällt, werden andere ___ wie gelb, orange und rot sichtbar.', gap: ['Blattfarbstoffe|Farbstoffe|Farben'] },
     { q: 'Am Grunde des Blattstiels bildet sich eine ___ Trennungsschicht.', gap: ['korkartige'] },
-    { q: 'Dabei werden die ___ unterbrochen und das Blatt wird trocken.', gap: ['Wasserleitungsbahnen'] },
+    { q: 'Dabei werden die ___ unterbrochen und das Blatt wird trocken.', gap: ['Wasserleitungsbahnen|Leitungsbahnen|Wasserleitungen'] },
     { q: 'Am Boden bildet sich eine Schicht aus Laub, die ___.', gap: ['Laubstreuschicht|Laubstreu'] },
     { q: 'Die Laubstreu wird von ___ zersetzt. Es bildet sich Humus.', gap: ['Bodenorganismen|Bodenlebewesen'] },
     { q: 'Was entsteht, wenn Bodenorganismen das Laub zersetzen?', a: ['Humus'], c: ['Kork', 'Chlorophyll', 'Sand'] },
     { q: 'Schutz gegen ___: Im Winter können Pflanzen über den gefrorenen Boden kein Wasser aufnehmen.', gap: ['Austrocknung'] },
     { q: 'Schutz vor ___: Wasser würde in den Blättern gefrieren.', gap: ['Frostsprengung'], falsch: { 'Lichtmenge': 'Die Lichtmenge (kürzere Tage) löst den Laubfall aus. Hier geht es ums Gefrieren → Frostsprengung.' } },
-    { q: 'Gefrorenes Wasser dehnt sich aus. Die Pflanzenzellen würden ___.', gap: ['platzen'] },
+    { q: 'Gefrorenes Wasser dehnt sich aus. Die Pflanzenzellen würden ___.', gap: ['platzen|zerplatzen'] },
     { q: 'Warum werfen Bäume im Herbst ihre Blätter ab?', m: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung', 'damit sie im Winter mehr Licht bekommen', 'weil die Blätter zu schwer werden'], a: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung'] },
-    { q: 'Bring den Laubabfall in die richtige Reihenfolge.', order: ['Die Tage werden kürzer', 'Das Chlorophyll zerfällt – gelb, orange und rot werden sichtbar', 'Eine korkartige Trennungsschicht bildet sich', 'Das Blatt trocknet und fällt ab', 'Bodenorganismen machen daraus Humus'] },
+    { q: 'Bring den Laubabfall in die richtige Reihenfolge.', order: ['Die Tage werden kürzer', 'Die Blätter verfärben sich und fallen ab', 'Am Boden bildet sich die Laubstreuschicht', 'Bodenorganismen machen daraus Humus'] },
     { q: 'Warum kann ein Baum im Winter kein Wasser aufnehmen?', c: ['Weil der Boden gefroren ist', 'Weil es nicht regnet', 'Weil die Wurzeln schlafen', 'Weil er keine Blätter hat'], a: 'Weil der Boden gefroren ist' },
     { q: 'Winterharte Pflanzen haben eine Art „Frostschutzmittel“ in den Blättern.', tf: true },
   ],
@@ -821,11 +828,11 @@ thema('biologie', {
     { q: 'Wozu dienen Blüten?', c: ['der geschlechtlichen Fortpflanzung', 'der Fotosynthese', 'der Wasseraufnahme', 'dem Schutz vor Frost'], a: 'der geschlechtlichen Fortpflanzung' },
     { q: 'Was ist die Aufgabe der grünen <b>Kelchblätter</b>?', c: ['Schutz und Stütze der Blüte', 'Tiere anlocken', 'Pollen bilden', 'Samen bilden'], a: 'Schutz und Stütze der Blüte' },
     { q: 'Was ist die Aufgabe der farbigen <b>Kronblätter</b>?', c: ['Tiere anlocken', 'Schutz vor Kälte', 'Wasser aufnehmen', 'die Frucht bilden'], a: 'Tiere anlocken' },
-    { q: 'Wie heißt der <b>männliche</b> Teil der Blüte?', a: ['Staubblatt', 'Staubblätter', 'das Staubblatt'], c: ['Stempel', 'Kelchblatt', 'Kronblatt'] },
+    { q: 'Wie heißt der <b>männliche</b> Teil der Blüte?', a: ['Staubblatt', 'Staubblätter', 'Staubgefäß', 'Staubgefäße'], c: ['Stempel', 'Kelchblatt', 'Kronblatt'] },
     { q: 'Wie heißt der <b>weibliche</b> Teil der Blüte?', a: ['Stempel', 'der Stempel', 'Fruchtblatt', 'Fruchtblätter'], c: ['Staubblatt', 'Kelchblatt', 'Staubbeutel'] },
     { q: 'Das Staubblatt besteht aus ___ und ___.', gap: ['Staubbeutel', 'Staubfaden'], frei: true, tipp: ['Beide Wörter beginnen mit „Staub…“.'] },
     { q: 'Kreuze die drei Teile des <b>Stempels</b> an.', m: ['Narbe', 'Griffel', 'Fruchtknoten', 'Staubbeutel', 'Kelchblatt'], a: ['Narbe', 'Griffel', 'Fruchtknoten'] },
-    { q: 'Wo entsteht der Pollen?', a: ['im Staubbeutel', 'Staubbeutel', 'in den Staubbeuteln', 'Staubbeuteln', 'im Staubblatt', 'Staubblatt', 'in den Staubblättern'], c: ['in der Narbe', 'im Fruchtknoten', 'im Kelchblatt'] },
+    { q: 'Wo entsteht der Pollen?', a: ['im Staubbeutel', 'Staubbeutel', 'in den Staubbeuteln', 'Staubbeuteln', 'im Staubblatt', 'Staubblatt', 'in den Staubblättern', 'in den Pollensäcken', 'Pollensack', 'Pollensäcke'], c: ['in der Narbe', 'im Fruchtknoten', 'im Kelchblatt'] },
     { q: 'Aus welchem Teil der Blüte entsteht die Frucht?', a: ['Fruchtknoten', 'aus dem Fruchtknoten', 'dem Fruchtknoten'], c: ['Narbe', 'Kronblatt', 'Staubfaden'] },
     { q: 'Ordne zu: männlich oder weiblich?', pairs: [['Staubbeutel', 'männlich'], ['Narbe', 'weiblich'], ['Staubfaden', 'männlich'], ['Fruchtknoten', 'weiblich']] },
     { q: 'Was ist eine <b>zwittrige</b> Blüte?', c: ['Sie hat männliche und weibliche Teile', 'Sie hat nur männliche Teile', 'Sie hat keine Kronblätter', 'Sie blüht zweimal im Jahr'], a: 'Sie hat männliche und weibliche Teile' },
@@ -870,17 +877,17 @@ thema('biologie', {
   ],
   fragen: [
     { q: 'Woraus entsteht eine Frucht?', c: ['aus einer befruchteten Blüte', 'aus einem Blatt', 'aus der Wurzel', 'aus der Rinde'], a: 'aus einer befruchteten Blüte' },
-    { q: 'Was befindet sich in der Frucht?', a: ['Samen', 'die Samen'], c: ['Pollen', 'Chlorophyll', 'Blattporen'] },
+    { q: 'Was befindet sich in der Frucht?', a: ['Samen', 'Same', 'Kerne', 'Samenkörner'], c: ['Pollen', 'Chlorophyll', 'Blattporen'] },
     { q: 'Kreuze die Aufgaben der Frucht an.', m: ['Schutz der Samen vor Austrocknung', 'Schutz vor Kälte und Verletzung', 'Vermehrung und Verbreitung', 'Fotosynthese', 'Wasser aus dem Boden holen'], a: ['Schutz der Samen vor Austrocknung', 'Schutz vor Kälte und Verletzung', 'Vermehrung und Verbreitung'] },
     { q: 'Ordne zu: saftige oder trockene Frucht?', pairs: [['Beere', 'saftig'], ['Nussfrucht', 'trocken'], ['Kernfrucht', 'saftig'], ['Springfrucht', 'trocken']] },
     { q: 'Ordne zu: saftige oder trockene Frucht?', pairs: [['Steinfrucht', 'saftig'], ['Zerfallfrucht', 'trocken'], ['Sammelsteinfrucht', 'saftig']] },
     { q: 'Die Samen liegen frei im Fruchtfleisch. Welcher Fruchttyp ist das?', a: ['Beere'], c: ['Steinfrucht', 'Kernfrucht', 'Nussfrucht'] },
-    { q: 'Der Samen ist von einem harten Stein umgeben. Welcher Fruchttyp ist das?', a: ['Steinfrucht'], c: ['Beere', 'Kernfrucht', 'Nussfrucht'] },
-    { q: 'Ledrige Samen liegen in einem Gehäuse. Welcher Fruchttyp ist das?', a: ['Kernfrucht'], c: ['Steinfrucht', 'Beere', 'Springfrucht'] },
+    { q: 'Der Samen ist von einem harten „Stein“ umgeben, rundherum ist Fruchtfleisch. Welcher Fruchttyp ist das?', a: ['Steinfrucht'], c: ['Beere', 'Kernfrucht', 'Nussfrucht'] },
+    { q: 'Die Samen liegen in einem ledrigen Gehäuse (Kerngehäuse). Welcher Fruchttyp ist das?', a: ['Kernfrucht'], c: ['Steinfrucht', 'Beere', 'Springfrucht'] },
     { q: 'Viele kleine Steinfrüchte bilden zusammen eine Frucht. Welcher Fruchttyp ist das?', a: ['Sammelsteinfrucht'], c: ['Beere', 'Steinfrucht', 'Zerfallfrucht'] },
     { q: 'Die Frucht springt auf und schleudert die Samen hinaus. Welcher Fruchttyp ist das?', a: ['Springfrucht'], c: ['Zerfallfrucht', 'Nussfrucht', 'Beere'] },
     { q: 'Die trockene Frucht bricht in Stückchen auseinander. Welcher Fruchttyp ist das?', a: ['Zerfallfrucht', 'Zerfallsfrucht'], c: ['Springfrucht', 'Nussfrucht', 'Steinfrucht'] },
-    { q: 'Der Samen steckt in einer harten, verholzten Schale. Welcher Fruchttyp ist das?', a: ['Nussfrucht', 'Nuss'], c: ['Steinfrucht', 'Kernfrucht', 'Beere'] },
+    { q: 'Der Samen steckt in einer harten, verholzten Schale – ganz ohne Fruchtfleisch. Welcher Fruchttyp ist das?', a: ['Nussfrucht', 'Nuss'], c: ['Steinfrucht', 'Kernfrucht', 'Beere'] },
     { q: 'Ordne die Früchte ihrem Fruchttyp zu.', pairs: [['Apfel', 'Kernfrucht'], ['Zwetschke', 'Steinfrucht'], ['Himbeere', 'Sammelsteinfrucht'], ['Haselnuss', 'Nussfrucht']] },
     { q: 'Ordne die Früchte ihrem Fruchttyp zu.', pairs: [['Gurke', 'Beere'], ['Fisole', 'Springfrucht'], ['Ahorn', 'Zerfallfrucht'], ['Birne', 'Kernfrucht']] },
     { q: 'Kreuze alle <b>Beeren</b> an.', m: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere', 'Himbeere', 'Erdbeere'], a: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere'], erk: 'Himbeere = Sammelsteinfrucht. Die Erdbeere ist auch keine Beere.' },
@@ -908,7 +915,7 @@ thema('biologie', {
     { q: 'Du findest einen ganzen Zapfen am Waldboden. Von welchem Baum ist er?', c: ['Fichte', 'Tanne'], a: 'Fichte', erk: 'Tannenzapfen zerfallen schon am Baum.' },
     { q: 'Die Fichte sticht, die Tanne nicht.', tf: true },
     { q: 'Wofür wird Fichtenholz verwendet?', m: ['Möbel', 'Papier', 'Bauholz', 'Glas'], a: ['Möbel', 'Papier', 'Bauholz'] },
-    { q: 'Welcher Baum ist als Weihnachtsbaum besonders beliebt?', c: ['Tanne', 'Fichte'], a: 'Tanne' },
+    { q: 'Laut Arbeitsblatt werden beide als Weihnachtsbaum verwendet. Welcher ist <b>besonders</b> beliebt?', c: ['Tanne', 'Fichte'], a: 'Tanne' },
     { q: 'Fichte und Tanne sind Laubbäume.', tf: false, erk: 'Es sind <b>Nadel</b>bäume.' },
   ],
 });
@@ -924,10 +931,10 @@ thema('physik', {
   fragen: [
     { q: 'Wie heißt der Übergang von fest zu flüssig?', a: 'schmelzen', c: ['erstarren', 'verdampfen', 'kondensieren'] },
     { q: 'Wie heißt der Übergang von gasförmig zu flüssig?', a: ['kondensieren', 'Kondensation'], c: ['verdampfen', 'schmelzen', 'sublimieren'], erk: 'Zum Beispiel beschlägt ein kalter Spiegel im Bad.' },
-    { q: 'Wie heißt der Übergang von flüssig zu fest?', a: 'erstarren', c: ['schmelzen', 'kondensieren', 'resublimieren'] },
-    { q: 'Bei wie viel °C siedet Wasser (auf Meereshöhe)?', a: ['100', '100 °C', '100°C', '100 Grad'], c: ['0 °C', '50 °C', '200 °C'] },
+    { q: 'Wie heißt der Übergang von flüssig zu fest?', a: ['erstarren', 'Erstarrung', 'gefrieren'], c: ['schmelzen', 'kondensieren', 'resublimieren'] },
+    { q: 'Bei wie viel °C siedet Wasser (auf Meereshöhe)?', a: ['100', '100 °C', '100°C', '100 Grad', '100 Grad Celsius', '100°', 'hundert'], c: ['0 °C', '50 °C', '200 °C'] },
     { q: 'Ordne den Aggregatzustand zu.', pairs: [['Eis', 'fest'], ['Wasser', 'flüssig'], ['Wasserdampf', 'gasförmig']] },
-    { q: 'In welchem Zustand sind die Teilchen am weitesten voneinander entfernt?', a: 'gasförmig', c: ['fest', 'flüssig'] },
+    { q: 'In welchem Zustand sind die Teilchen am weitesten voneinander entfernt?', a: ['gasförmig', 'Gas', 'im gasförmigen Zustand'], c: ['fest', 'flüssig'] },
     { q: 'Wenn ein Stoff wärmer wird, bewegen sich seine Teilchen schneller.', tf: true },
     { q: 'Raureif entsteht, wenn Wasserdampf direkt zu Eis wird. Das nennt man ___.', gap: ['resublimieren|Resublimation|resublimation'] },
   ],
@@ -948,7 +955,7 @@ thema('dgb', {
   ],
   fragen: [
     { q: 'Wie viele Spalten hat eure App-Tabelle?', a: ['8', 'acht'], c: ['7', '6', '10'] },
-    { q: 'In welche Zeile kommen die Überschriften?', a: ['1', 'Zeile 1', 'in Zeile 1', 'erste Zeile', 'die erste'], c: ['in die letzte Zeile', '2', '8'] },
+    { q: 'In welche Zeile kommen die Überschriften?', a: ['1', 'Zeile 1', 'erste Zeile', 'die erste', 'erste', 'eins', 'Zeile eins', 'in die erste Zeile', 'in die Zeile 1'], c: ['in die letzte Zeile', '2', '8'] },
     { q: 'Ihr bewertet 7 Apps und habt eine Zeile mit Überschriften. Wie viele Zeilen hat die Tabelle?', a: ['8', 'acht'], c: ['7', '9', '14'], erk: '1 Zeile Überschriften + 7 Zeilen Apps = 8 Zeilen' },
     { q: 'Die Tabelle hat 8 Spalten und beginnt bei A. Bei welchem Buchstaben endet sie?', a: ['H'], c: ['G', 'I', 'J'], erk: 'A B C D E F G H – das sind 8.' },
     { q: 'In welcher Zelle steht die Überschrift „Werbung“?', bild: xl(XL_APP), a: ['F1'], c: ['1F', 'E1', 'F2'] },
@@ -961,13 +968,13 @@ thema('dgb', {
     { q: 'Kreuze an, was du bei der <b>Sicherheit</b> einer App prüfen solltest.', m: ['welche Berechtigungen sie will', 'ob Fremde mich anschreiben können', 'was mit meinen Daten passiert', 'welche Farbe das Logo hat'], a: ['welche Berechtigungen sie will', 'ob Fremde mich anschreiben können', 'was mit meinen Daten passiert'] },
     { q: 'Eine Gratis-App kann trotzdem Geld kosten.', tf: true, erk: 'Zum Beispiel durch In-App-Käufe oder ein Abo.' },
     { q: 'Wie fügst du in Excel ein Bild ein?', c: ['Einfügen → Bilder', 'Datei → Speichern', 'Start → Fett', 'Ansicht → Zoom'], a: 'Einfügen → Bilder' },
-    { q: 'Wie heißt die Taste für einen Screenshot (rechts oben auf der Tastatur)?', a: ['Druck', 'Druck-Taste', 'Drucktaste', 'Print Screen', 'PrtSc', 'Druck S-Abf'], c: ['Entf', 'Esc', 'Pos1'] },
+    { q: 'Wie heißt die Taste für einen Screenshot (rechts oben auf der Tastatur)?', a: ['Druck', 'Druck-Taste', 'Drucktaste', 'Print Screen', 'PrtSc', 'PrtScn', 'Prt Scr', 'Druck S-Abf', 'Druck/S-Abf'], c: ['Entf', 'Esc', 'Pos1'] },
     { q: 'Wohin kommt der Screenshot, wenn du die Druck-Taste drückst?', c: ['in die Zwischenablage', 'direkt in den Drucker', 'in den Papierkorb', 'auf den Desktop als Datei'], a: 'in die Zwischenablage', falsch: { 'direkt in den Drucker': 'Die Taste heißt zwar „Druck“, aber sie druckt nichts aus – sie kopiert den Bildschirm.' } },
     { q: 'Mit welcher Tastenkombination fügst du den Screenshot ein?', a: ['Strg+V', 'Strg + V', 'Ctrl+V', 'Strg V'], c: ['Strg+C', 'Strg+Z', 'Strg+X'], genau: true },
     { q: 'Ordne die Tastenkombinationen zu.', pairs: [['Strg + C', 'kopieren'], ['Strg + V', 'einfügen'], ['Strg + X', 'ausschneiden'], ['Strg + Z', 'rückgängig']] },
     { q: 'Die neue Seite in OneNote soll so heißen: ___', gap: ['App Bewertung|App-Bewertung|AppBewertung'], tipp: ['Zwei Wörter: zuerst „App“ …'] },
     { q: 'Ordne von groß nach klein: Wie ist OneNote aufgebaut?', order: ['Notizbuch', 'Abschnitt', 'Seite'] },
-    { q: 'Bring die Aufgabe in die richtige Reihenfolge.', order: ['Excel öffnen', 'Überschriften in Zeile 1 schreiben', 'mindestens 7 Apps bewerten', 'zwei Bilder einfügen', 'Screenshot mit der Druck-Taste', 'in OneNote auf der neuen Seite mit Strg + V einfügen'] },
+    { q: 'Bring die Aufgabe in die richtige Reihenfolge.', order: ['Excel öffnen', 'Überschriften in Zeile 1 schreiben', 'mindestens 7 Apps bewerten', 'Screenshot mit der Druck-Taste', 'in OneNote auf der neuen Seite mit Strg + V einfügen'] },
     { q: 'Ein Screenshot ist ein Foto vom Bildschirm.', tf: true },
   ],
 });
@@ -988,7 +995,7 @@ thema('dgb', {
     { q: 'Was steht in Zelle B4?', bild: xl(XL_TG), a: ['15'], c: ['30', '25', 'März'] },
     { q: 'Spalten haben Buchstaben, Zeilen haben Zahlen.', tf: true },
     { q: 'Wie nennt man die ganze Excel-Datei?', a: ['Arbeitsmappe', 'Mappe'], c: ['Tabellenblatt', 'Zelle', 'Dokument'] },
-    { q: 'Womit beginnt jede Formel in Excel?', a: ['=', 'mit ='], c: ['+', '#', '*'] },
+    { q: 'Womit beginnt jede Formel in Excel?', a: ['=', 'Gleichheitszeichen', 'mit dem Gleichheitszeichen', 'mit einem Gleichheitszeichen', 'ist gleich', 'Ist-gleich-Zeichen'], c: ['+', '#', '*'] },
     { q: 'Ordne die Rechenzeichen zu.', pairs: [['+', 'plus'], ['-', 'minus'], ['*', 'mal'], ['/', 'geteilt']] },
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'C2', fx: '=B2+B3' }), a: ['45'], c: ['2023', 'B2+B3', '20'], erk: '20 + 25 = 45' },
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'C5', fx: '=B5-B4' }), a: ['15'], c: ['45', '-15', '30'], erk: '30 − 15 = 15' },
@@ -1015,7 +1022,7 @@ thema('dgb', {
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MIN(B2:B5)' }), a: ['15'], c: ['20', '30', 'März'] },
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MITTELWERT(B2:B5)' }), a: ['22,5', '22.5'], c: ['90', '25', '20'], erk: 'Summe 90 geteilt durch 4 Monate = 22,5' },
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=ANZAHL(B2:B5)' }), a: ['4'], c: ['5', '90', '30'], erk: 'ANZAHL zählt, wie viele Zellen eine Zahl enthalten.' },
-    { q: 'Schreib die Formel, die das Taschengeld von Jänner bis April zusammenzählt.', bild: xl(XL_TG, { hl: 'B6' }), a: ['=SUMME(B2:B5)', '=B2+B3+B4+B5'], tipp: ['Die Funktion für „zusammenzählen“ heißt SUMME.', 'Der Bereich geht von B2 bis B5 – mit Doppelpunkt.'] },
+    { q: 'Schreib die Formel, die das Taschengeld von Jänner bis April zusammenzählt.', bild: xl(XL_TG, { hl: 'B6' }), a: ['=SUMME(B2:B5)', '=B2+B3+B4+B5', '=SUMME(B2;B3;B4;B5)'], tipp: ['Die Funktion für „zusammenzählen“ heißt SUMME.', 'Der Bereich geht von B2 bis B5 – mit Doppelpunkt.'] },
     { q: 'Schreib die Formel für den Durchschnitt von B2 bis B5.', a: ['=MITTELWERT(B2:B5)', '=(B2+B3+B4+B5)/4', '=SUMME(B2:B5)/4'], tipp: ['Durchschnitt heißt in Excel MITTELWERT.'] },
     { q: 'Welche Zellen gehören zum Bereich <b>A1:A4</b>?', c: ['A1, A2, A3, A4', 'nur A1 und A4', 'A1, B1, C1, D1', 'A1 bis D4'], a: 'A1, A2, A3, A4' },
     { q: 'Wie viele Zellen hat der Bereich <b>A1:B3</b>?', a: ['6', 'sechs'], c: ['3', '4', '5'], bild: xl([['', '', ''], ['', '', ''], ['', '', '']], { sel: 'A1:B3' }), erk: '2 Spalten × 3 Zeilen = 6 Zellen' },
@@ -1037,9 +1044,9 @@ thema('dgb', {
   fragen: [
     { q: 'Ist eine Tastatur Hardware oder Software?', c: ['Hardware', 'Software'], a: 'Hardware' },
     { q: 'Ist ein Browser Hardware oder Software?', c: ['Hardware', 'Software'], a: 'Software' },
-    { q: 'Wofür steht EVA?', a: ['Eingabe, Verarbeitung, Ausgabe', 'Eingabe Verarbeitung Ausgabe', 'Eingabe – Verarbeitung – Ausgabe'], c: ['Erstellen, Verschicken, Ablegen', 'Einschalten, Verwenden, Ausschalten', 'Eingabe, Speichern, Löschen'] },
+    { q: 'Wofür steht EVA?', a: ['Eingabe, Verarbeitung, Ausgabe', 'Eingabe Verarbeitung Ausgabe', 'Eingabe – Verarbeitung – Ausgabe', 'Eingabe, Verarbeitung und Ausgabe', 'Eingabe Verarbeitung und Ausgabe', 'Eingabe-Verarbeitung-Ausgabe'], c: ['Erstellen, Verschicken, Ablegen', 'Einschalten, Verwenden, Ausschalten', 'Eingabe, Speichern, Löschen'] },
     { q: 'Ordne zu: Eingabe- oder Ausgabegerät?', pairs: [['Maus', 'Eingabe'], ['Drucker', 'Ausgabe'], ['Mikrofon', 'Eingabe'], ['Lautsprecher', 'Ausgabe']] },
-    { q: 'Kreuze alle <b>Eingabegeräte</b> an.', m: ['Tastatur', 'Bildschirm', 'Kamera', 'Scanner', 'Drucker'], a: ['Tastatur', 'Kamera', 'Scanner'] },
+    { q: 'Kreuze alle <b>Eingabegeräte</b> an.', m: ['Tastatur', 'Beamer', 'Kamera', 'Scanner', 'Drucker'], a: ['Tastatur', 'Kamera', 'Scanner'] },
     { q: 'Welcher Teil des Computers verarbeitet die Daten?', a: ['Prozessor', 'CPU', 'der Prozessor'], c: ['Bildschirm', 'Festplatte', 'Maus'] },
     { q: 'Ein Betriebssystem ist zum Beispiel …', c: ['Windows', 'Word', 'YouTube', 'die Maus'], a: 'Windows' },
     { q: 'Im Arbeitsspeicher (RAM) bleiben die Daten auch nach dem Ausschalten gespeichert.', tf: false, erk: 'Dafür ist die Festplatte bzw. SSD da. Der Arbeitsspeicher wird beim Ausschalten gelöscht.' },
@@ -1050,17 +1057,17 @@ thema('dgb', {
 thema('dgb', {
   id: 'dgb-sicher', title: 'Sicher im Internet', icon: '🔒', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Passwörter, Phishing, Datenschutz, Urheberrecht.',
   lern: [
-    { h: 'Gute Passwörter', html: `<p>Ein <b>sicheres Passwort</b> ist <b>lang</b> (mindestens 12 Zeichen) und hat <b>Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen</b>.</p><p>Kein Name, kein Geburtstag, kein „123456“. Für jedes Konto ein <b>eigenes</b> Passwort – und es <b>niemandem verraten</b>, auch nicht der besten Freundin.</p><div class="merke">Tipp: Aus einem Satz ein Passwort machen: „Meine Katze Mimi frisst 2 Mal am Tag Fisch!“ → MKMf2MaTF!</div>` },
+    { h: 'Gute Passwörter', html: `<p>Ein <b>sicheres Passwort</b> ist <b>lang</b> (mindestens 12 Zeichen) und hat <b>Groß- und Kleinbuchstaben, Zahlen und Sonderzeichen</b>.</p><p>Kein Name, kein Geburtstag, kein „123456“. Für jedes Konto ein <b>eigenes</b> Passwort – und es <b>niemandem verraten</b>, auch nicht der besten Freundin.</p><div class="merke">Tipp: Aus einem Satz ein Passwort machen: „Meine Katze Mimi frisst 2 Mal am Tag Fisch und Milch!“ → MKMf2MaTFuM!</div>` },
     { h: 'Phishing, Daten und Bilder', html: `<p><b>Phishing</b>: Gefälschte Nachrichten oder Webseiten wollen Passwörter oder Daten „abfischen“. Achtung bei Zeitdruck („Sofort!“), Rechtschreibfehlern und seltsamen Absendern. Nie auf solche Links tippen!</p><p><b>Persönliche Daten</b> (Adresse, Telefonnummer, Schule) gehören nicht ins Netz.</p><p><b>Recht am eigenen Bild</b>: Fotos von anderen nur mit deren Erlaubnis posten. <b>Urheberrecht</b>: Bilder, Musik und Texte gehören dem, der sie gemacht hat – nicht einfach kopieren und als eigene ausgeben.</p><div class="oops">Was einmal im Internet ist, bekommt man kaum wieder weg – auch wenn man es löscht.</div>` },
   ],
   fragen: [
-    { q: 'Welches Passwort ist am sichersten?', c: ['MKMf2MaTF!', '123456', 'Nicole2014', 'passwort'], a: 'MKMf2MaTF!' },
+    { q: 'Welches Passwort ist am sichersten?', c: ['MKMf2MaTFuM!', '123456', 'Nicole2014', 'passwort'], a: 'MKMf2MaTFuM!' },
     { q: 'Kreuze alles an, was ein sicheres Passwort hat.', m: ['mindestens 12 Zeichen', 'Sonderzeichen', 'Zahlen', 'den eigenen Namen', 'das Geburtsdatum'], a: ['mindestens 12 Zeichen', 'Sonderzeichen', 'Zahlen'] },
     { q: 'Man sollte für alle Konten dasselbe Passwort verwenden.', tf: false, erk: 'Wird ein Passwort geknackt, wären sonst alle Konten in Gefahr.' },
     { q: 'Wie nennt man gefälschte Nachrichten, die Passwörter „abfischen“ wollen?', a: 'Phishing', c: ['Streaming', 'Chatten', 'Updaten'] },
     { q: 'Kreuze alle Warnzeichen für eine Phishing-Nachricht an.', m: ['großer Zeitdruck („sofort!“)', 'viele Rechtschreibfehler', 'seltsamer Absender', 'Nachricht von deiner Lehrerin im Schul-Account über die Hausübung'], a: ['großer Zeitdruck („sofort!“)', 'viele Rechtschreibfehler', 'seltsamer Absender'] },
     { q: 'Darfst du ein Foto deiner Freundin ohne zu fragen posten?', c: ['Nein – sie muss es erlauben', 'Ja, wenn es lustig ist', 'Ja, wenn sie nicht hinschaut'], a: 'Nein – sie muss es erlauben', erk: 'Das nennt man <b>Recht am eigenen Bild</b>.' },
-    { q: 'Wie heißt das Recht, das Bilder, Musik und Texte ihrer Erschafferin schützt?', a: ['Urheberrecht', 'das Urheberrecht'], c: ['Wahlrecht', 'Strafrecht', 'Fahrrecht'] },
+    { q: 'Wie heißt das Recht, das Bilder, Musik und Texte ihrer Erschafferin schützt?', a: ['Urheberrecht', 'das Urheberrecht', 'Copyright'], c: ['Wahlrecht', 'Strafrecht', 'Fahrrecht'] },
     { q: 'Was du im Internet löschst, ist sicher für immer weg.', tf: false, erk: 'Andere können es schon gespeichert, kopiert oder einen Screenshot gemacht haben.' },
     { q: 'Ordne zu: Darf das ins Internet?', pairs: [['meine Wohnadresse', 'nein'], ['mein Lieblingsbuch', 'ja'], ['meine Handynummer', 'nein'], ['ein selbst gemaltes Bild ohne Gesicht', 'ja']] },
   ],
@@ -1076,7 +1083,7 @@ test({ id: 'bio-test-pflanzen', fach: 'biologie', name: 'Bio-Test Pflanzen', dat
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '28.11.2026 09:58';
+const APP_VER = '28.11.2026 10:06';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
@@ -1455,7 +1462,7 @@ function answerHTML(t) {
 function evaluate(t, box, picked) {
   const spell = FACH[THEMA[t.thema].fach].spell;
   const textRes = (input, answers) => {
-    const m = matchText(input, answers, { exakt: t.exakt, strict: t.genau });
+    const m = matchText(input, answers, { exakt: t.exakt, strict: t.genau, avoid: [...(t.wrong || []), ...(t.pool || []).flatMap(x => String(x).split('|')), ...(t.c || [])].filter(x => !answers.includes(x)) });
     if (!m) return { ok: false, trap: trapFor(t, input) };
     if (m.r === 'ok') return { ok: true };
     if (m.r === 'case') return { partial: 'Fast! 👍 Schau nochmal: <b>groß oder klein</b> geschrieben?' };
