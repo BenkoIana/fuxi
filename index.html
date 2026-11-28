@@ -554,7 +554,7 @@ function thema(fid, o) {
     add(q, q.kind + q.q + (r.a || ''));
   }
   if (t.karten) {
-    const K = t.karten, fill = (s, p) => s.replace(/\{(\d)\}/g, (_, i) => p[i]);
+    const K = t.karten, fill = (s, p) => s.replace(/\{(\d)\}/g, (_, i) => String(p[i]).split('|')[0]);
     const pool0 = K.list.map(p => p[1]), pool1 = K.list.map(p => p[0]);
     for (const p of K.list) {
       add({ kind: 'text', q: fill(K.f, p), a: String(p[1]).split('|'), pool: pool0, tipp: [].concat(p[3] || []), erk: p[2] || '', exakt: K.exakt }, 'k' + p[0] + '>' + p[1]);
@@ -590,7 +590,7 @@ thema('deutsch', {
     { q: 'Welche Wortart ist „wir“?', c: ['Nomen', 'Artikel', 'Adjektiv', 'Pronomen'], a: 'Pronomen' },
     { q: 'Kreuze alle <b>Nomen</b> an.', m: ['Angst', 'laufen', 'Tisch', 'grün', 'das Lachen', 'schnell'], a: ['Angst', 'Tisch', 'das Lachen'], erk: '„Lachen“ wird mit Artikel zum Nomen.' },
     { q: 'Kreuze alle <b>Adjektive</b> an.', m: ['laut', 'Baum', 'freundlich', 'singen', 'kalt'], a: ['laut', 'freundlich', 'kalt'] },
-    { q: 'Steigere: schön – schöner – ___', gap: ['am schönsten'], erk: 'Grundstufe – Mehrstufe (Komparativ) – Meiststufe (Superlativ).' },
+    { q: 'Steigere: schön – schöner – ___', gap: ['am schönsten|schönsten'], erk: 'Grundstufe – Mehrstufe (Komparativ) – Meiststufe (Superlativ).' },
     { q: 'Steigere: gut – ___ – am besten', gap: ['besser'], falsch: { 'guter': 'Das ist eine Ausnahme! gut – besser – am besten.' } },
     { q: 'Nomen werden immer großgeschrieben.', tf: true },
     { q: '„ein“ und „eine“ sind bestimmte Artikel.', tf: false, erk: 'Das sind die <b>unbestimmten</b> Artikel. Bestimmt sind: der, die, das.' },
@@ -644,7 +644,7 @@ thema('geografie', {
     { h: '9 Bundesländer', html: `<p>Österreich hat <b>9 Bundesländer</b>. Die Bundeshauptstadt ist <b>Wien</b> – Wien ist gleichzeitig ein Bundesland.</p><p>Das <b>größte</b> Bundesland ist <b>Niederösterreich</b>, das <b>kleinste</b> ist <b>Wien</b>. Ganz im Westen liegt <b>Vorarlberg</b>, ganz im Osten das <b>Burgenland</b>.</p><div class="merke">Landeshauptstädte: Wien · St. Pölten · Eisenstadt · Graz · Linz · Salzburg · Klagenfurt · Innsbruck · Bregenz</div><div class="oops">Die Hauptstadt von Niederösterreich ist <b>St. Pölten</b>, nicht Wien!</div>` },
   ],
   karten: {
-    f: 'Wie heißt die Landeshauptstadt von {0}?', r: '{1} ist die Landeshauptstadt von …?',
+    f: 'Wie heißt die Landeshauptstadt des Bundeslandes {0}?', r: '{1} ist die Landeshauptstadt welches Bundeslandes?',
     list: [['Wien', 'Wien'], ['Niederösterreich', 'St. Pölten|Sankt Pölten|St Pölten'], ['Burgenland', 'Eisenstadt'], ['Steiermark', 'Graz'], ['Oberösterreich', 'Linz'], ['Salzburg', 'Salzburg'], ['Kärnten', 'Klagenfurt|Klagenfurt am Wörthersee'], ['Tirol', 'Innsbruck'], ['Vorarlberg', 'Bregenz']],
   },
   fragen: [
@@ -731,13 +731,13 @@ thema('biologie', {
   fragen: [
     { q: 'Kreuze die drei Grundteile einer Pflanze an.', m: ['Wurzel', 'Stamm oder Stängel', 'Blätter', 'Kambium', 'Zapfen'], a: ['Wurzel', 'Stamm oder Stängel', 'Blätter'] },
     { q: 'Kreuze alle Aufgaben der <b>Wurzel</b> an.', m: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke', 'Fotosynthese', 'Insekten anlocken'], a: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke'] },
-    { q: 'Nenne eine Pflanze, deren Wurzel Stärke speichert.', a: ['Karotte', 'Zuckerrübe', 'Karotten', 'Möhre', 'Rübe'], c: ['Tulpe', 'Fichte', 'Gras'] },
+    { q: 'Nenne eine Pflanze, deren Wurzel Stärke speichert.', a: ['Karotte', 'Zuckerrübe', 'Karotten', 'Möhre', 'Rübe', 'Zuckerrüben', 'Möhren', 'Rote Rübe'], c: ['Tulpe', 'Fichte', 'Gras'], falsch: { 'Kartoffel': 'Gute Idee, aber die Kartoffel ist eine Knolle am Spross, keine Wurzel. Im Heft stehen Karotte und Zuckerrübe.' } },
     { q: 'In welche Richtung fließt das <b>Wasser</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von unten nach oben' },
     { q: 'In welche Richtung fließt der <b>Zucker</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von oben nach unten', erk: 'Der Zucker entsteht in den Blättern und wird nach unten verteilt.' },
     { q: 'Kreuze alle Aufgaben des <b>Stammes</b> an.', m: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker', 'nimmt Wasser aus dem Boden auf'], a: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker'], erk: 'Wasser aus dem Boden aufnehmen – das macht die Wurzel.' },
     { q: 'Ordne die Nummern im Stammquerschnitt zu.', bild: BIO_STAMM, pairs: [['1', 'Borke'], ['2', 'Bast'], ['3', 'Kambium'], ['4', 'Splintholz'], ['5', 'Kernholz']] },
     { q: 'Ordne den Stammquerschnitt von <b>außen nach innen</b>.', order: ['Borke', 'Bast', 'Kambium', 'Splintholz', 'Kernholz'] },
-    { q: 'Wie heißt die äußerste Schicht des Stammes?', a: ['Borke', 'die Borke'], c: ['Bast', 'Kambium', 'Kernholz'] },
+    { q: 'Wie heißt die äußerste Schicht des Stammes?', a: ['Borke', 'die Borke'], c: ['Bast', 'Kambium', 'Kernholz'], falsch: { 'Rinde': 'Fast! Rinde = Borke + Bast. Die äußerste Schicht allein heißt Borke.' } },
     { q: 'Welche Schicht leitet den Zucker von den Blättern abwärts?', a: ['Bast', 'der Bast'], c: ['Borke', 'Splintholz', 'Kernholz'] },
     { q: 'Wie heißt die Wachstumsschicht im Stamm?', a: ['Kambium', 'das Kambium'], c: ['Bast', 'Borke', 'Splintholz'] },
     { q: 'Welches Holz leitet das Wasser zu den Blättern?', a: ['Splintholz', 'das Splintholz'], c: ['Kernholz', 'Bast', 'Borke'], falsch: { 'Kernholz': 'Das Kernholz stützt den Baum wie eine Säule. Das Wasser leitet das Splintholz.' } },
@@ -754,7 +754,7 @@ thema('biologie', {
   lern: [
     { h: 'So ist ein Blatt gebaut', html: `<div>${BIO_BLATT}</div><p><b>1 Blattstiel</b> · <b>2 Blattgrund</b> (dort beginnt das Blatt) · <b>3 Blattadern</b> = <b>Blattnerven</b>: transportieren <b>Wasser und Zucker</b> · <b>4 Blattrand</b></p><p>Auf dem Blatt sitzen winzige <b>Blattporen</b> = <b>Spaltöffnungen</b>. Sie sind <b>mikroskopisch klein</b> – man sieht sie nur mit dem Mikroskop.</p>` },
     { h: 'Blätter sind verschieden', html: `<p><b>Blattformen</b>: z. B. herzförmig, eiförmig …</p><p><b>Blattränder</b>: <b>gesägt</b> (mit kleinen Zacken) oder <b>ganzrandig</b> (glatter Rand)</p><p><b>Blattstellungen</b>: <b>wechselständig</b> (die Blätter wachsen abwechselnd einzeln am Zweig) oder <b>gegenständig</b> (zwei Blätter genau gegenüber)</p><div class="merke">Bilder dazu: Buch Seite 17</div>` },
-    { h: 'Die Aufgaben des Blattes', html: `<p><b>Verdunstung</b>: Das Blatt gibt Wasser über die <b>Blattporen</b> ab. Darum braucht die Pflanze <b>immer neues Wasser</b> – und damit kommen auch neue <b>Mineralstoffe</b> aus dem Boden.</p><p><b>Atmung</b> (im Heft: bei Nacht): Die Pflanze nimmt <b>Sauerstoff auf</b> und gibt <b>Kohlenstoffdioxid ab</b>.</p><p><b>Fotosynthese</b> (bei Tag) heißt „<b>mit Licht erzeugen</b>“. Das ist die <b>Ernährung</b> der Pflanze: Sie macht sich ihren Zucker selbst.</p><div class="merke">Kohlenstoffdioxid + Wasser + Sonnenlicht → Zucker + Sauerstoff</div>` },
+    { h: 'Die Aufgaben des Blattes', html: `<p><b>Verdunstung</b>: Das Blatt gibt Wasser über die <b>Blattporen</b> ab. Darum braucht die Pflanze <b>immer neues Wasser</b> – und damit kommen auch neue <b>Mineralstoffe</b> aus dem Boden.</p><p><b>Atmung</b> (im Heft: bei Nacht): Die Pflanze nimmt <b>Sauerstoff auf</b> und gibt <b>Kohlenstoffdioxid ab</b> (im Heft auch „Kohlendioxid“ – das ist dasselbe).</p><p><b>Fotosynthese</b> (auch <b>Photosynthese</b> geschrieben, bei Tag) heißt „<b>mit Licht erzeugen</b>“. Das ist die <b>Ernährung</b> der Pflanze: Sie macht sich ihren Zucker selbst.</p><div class="merke">Kohlenstoffdioxid + Wasser + Sonnenlicht → Zucker + Sauerstoff</div>` },
     { h: 'Chlorophyll und Chloroplasten', html: `<p>Der grüne Blattfarbstoff heißt <b>Chlorophyll</b> (griechisch: „Blattgrün“). Er <b>nimmt das Sonnenlicht auf</b>.</p><p>Das Chlorophyll steckt in den <b>Chloroplasten</b> – das sind kleine Räume in den Pflanzenzellen. Dort findet die <b>Fotosynthese</b> statt.</p><div class="oops">Nicht verwechseln: Chloro<b>phyll</b> = der grüne Farbstoff · Chloro<b>plasten</b> = die kleinen Räume, in denen er steckt.</div>` },
   ],
   fragen: [
@@ -800,7 +800,7 @@ thema('biologie', {
     { q: 'Schutz vor ___: Wasser würde in den Blättern gefrieren.', gap: ['Frostsprengung'], falsch: { 'Lichtmenge': 'Die Lichtmenge (kürzere Tage) löst den Laubfall aus. Hier geht es ums Gefrieren → Frostsprengung.' } },
     { q: 'Gefrorenes Wasser dehnt sich aus. Die Pflanzenzellen würden ___.', gap: ['platzen'] },
     { q: 'Warum werfen Bäume im Herbst ihre Blätter ab?', m: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung', 'damit sie im Winter mehr Licht bekommen', 'weil die Blätter zu schwer werden'], a: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung'] },
-    { q: 'Bring den Laubabfall in die richtige Reihenfolge.', order: ['Die Tage werden kürzer', 'Das Chlorophyll zerfällt', 'Gelb, orange und rot werden sichtbar', 'Eine korkartige Trennungsschicht bildet sich', 'Das Blatt trocknet und fällt ab', 'Bodenorganismen machen daraus Humus'] },
+    { q: 'Bring den Laubabfall in die richtige Reihenfolge.', order: ['Die Tage werden kürzer', 'Das Chlorophyll zerfällt – gelb, orange und rot werden sichtbar', 'Eine korkartige Trennungsschicht bildet sich', 'Das Blatt trocknet und fällt ab', 'Bodenorganismen machen daraus Humus'] },
     { q: 'Warum kann ein Baum im Winter kein Wasser aufnehmen?', c: ['Weil der Boden gefroren ist', 'Weil es nicht regnet', 'Weil die Wurzeln schlafen', 'Weil er keine Blätter hat'], a: 'Weil der Boden gefroren ist' },
     { q: 'Winterharte Pflanzen haben eine Art „Frostschutzmittel“ in den Blättern.', tf: true },
   ],
@@ -822,11 +822,11 @@ thema('biologie', {
     { q: 'Was ist die Aufgabe der grünen <b>Kelchblätter</b>?', c: ['Schutz und Stütze der Blüte', 'Tiere anlocken', 'Pollen bilden', 'Samen bilden'], a: 'Schutz und Stütze der Blüte' },
     { q: 'Was ist die Aufgabe der farbigen <b>Kronblätter</b>?', c: ['Tiere anlocken', 'Schutz vor Kälte', 'Wasser aufnehmen', 'die Frucht bilden'], a: 'Tiere anlocken' },
     { q: 'Wie heißt der <b>männliche</b> Teil der Blüte?', a: ['Staubblatt', 'Staubblätter', 'das Staubblatt'], c: ['Stempel', 'Kelchblatt', 'Kronblatt'] },
-    { q: 'Wie heißt der <b>weibliche</b> Teil der Blüte?', a: ['Stempel', 'der Stempel'], c: ['Staubblatt', 'Kelchblatt', 'Staubbeutel'] },
-    { q: 'Das Staubblatt besteht aus ___ und ___.', gap: ['Staubbeutel', 'Staubfaden'], tipp: ['Beide Wörter beginnen mit „Staub…“.'] },
+    { q: 'Wie heißt der <b>weibliche</b> Teil der Blüte?', a: ['Stempel', 'der Stempel', 'Fruchtblatt', 'Fruchtblätter'], c: ['Staubblatt', 'Kelchblatt', 'Staubbeutel'] },
+    { q: 'Das Staubblatt besteht aus ___ und ___.', gap: ['Staubbeutel', 'Staubfaden'], frei: true, tipp: ['Beide Wörter beginnen mit „Staub…“.'] },
     { q: 'Kreuze die drei Teile des <b>Stempels</b> an.', m: ['Narbe', 'Griffel', 'Fruchtknoten', 'Staubbeutel', 'Kelchblatt'], a: ['Narbe', 'Griffel', 'Fruchtknoten'] },
-    { q: 'Wo entsteht der Pollen?', a: ['im Staubbeutel', 'Staubbeutel'], c: ['in der Narbe', 'im Fruchtknoten', 'im Kelchblatt'] },
-    { q: 'Aus welchem Teil der Blüte entsteht die Frucht?', a: ['Fruchtknoten', 'aus dem Fruchtknoten'], c: ['Narbe', 'Kronblatt', 'Staubfaden'] },
+    { q: 'Wo entsteht der Pollen?', a: ['im Staubbeutel', 'Staubbeutel', 'in den Staubbeuteln', 'Staubbeuteln', 'im Staubblatt', 'Staubblatt', 'in den Staubblättern'], c: ['in der Narbe', 'im Fruchtknoten', 'im Kelchblatt'] },
+    { q: 'Aus welchem Teil der Blüte entsteht die Frucht?', a: ['Fruchtknoten', 'aus dem Fruchtknoten', 'dem Fruchtknoten'], c: ['Narbe', 'Kronblatt', 'Staubfaden'] },
     { q: 'Ordne zu: männlich oder weiblich?', pairs: [['Staubbeutel', 'männlich'], ['Narbe', 'weiblich'], ['Staubfaden', 'männlich'], ['Fruchtknoten', 'weiblich']] },
     { q: 'Was ist eine <b>zwittrige</b> Blüte?', c: ['Sie hat männliche und weibliche Teile', 'Sie hat nur männliche Teile', 'Sie hat keine Kronblätter', 'Sie blüht zweimal im Jahr'], a: 'Sie hat männliche und weibliche Teile' },
     { q: 'Manche Blüten stinken – sie locken damit Fliegen an.', tf: true },
@@ -885,7 +885,7 @@ thema('biologie', {
     { q: 'Ordne die Früchte ihrem Fruchttyp zu.', pairs: [['Gurke', 'Beere'], ['Fisole', 'Springfrucht'], ['Ahorn', 'Zerfallfrucht'], ['Birne', 'Kernfrucht']] },
     { q: 'Kreuze alle <b>Beeren</b> an.', m: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere', 'Himbeere', 'Erdbeere'], a: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere'], erk: 'Himbeere = Sammelsteinfrucht. Die Erdbeere ist auch keine Beere.' },
     { q: 'Die Erdbeere ist eine Beere.', tf: false, erk: 'Laut Arbeitsblatt sind Erdbeeren keine Beeren – auch wenn sie so heißen.' },
-    { q: 'Kreuze alle <b>trockenen</b> Früchte an.', m: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn', 'Apfel', 'Nektarine'], a: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn'] },
+    { q: 'Kreuze alle <b>trockenen</b> Früchte an.', m: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn', 'Apfel', 'Nektarine'], a: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn'], erk: 'Bei der Fisole ist die <b>reife</b> Hülse gemeint: Sie trocknet und springt auf (Springfrucht).' },
   ],
 });
 
@@ -1016,7 +1016,7 @@ thema('dgb', {
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=MITTELWERT(B2:B5)' }), a: ['22,5', '22.5'], c: ['90', '25', '20'], erk: 'Summe 90 geteilt durch 4 Monate = 22,5' },
     { q: 'Was zeigt die Zelle an?', bild: xl(XL_TG, { hl: 'B6', fx: '=ANZAHL(B2:B5)' }), a: ['4'], c: ['5', '90', '30'], erk: 'ANZAHL zählt, wie viele Zellen eine Zahl enthalten.' },
     { q: 'Schreib die Formel, die das Taschengeld von Jänner bis April zusammenzählt.', bild: xl(XL_TG, { hl: 'B6' }), a: ['=SUMME(B2:B5)', '=B2+B3+B4+B5'], tipp: ['Die Funktion für „zusammenzählen“ heißt SUMME.', 'Der Bereich geht von B2 bis B5 – mit Doppelpunkt.'] },
-    { q: 'Schreib die Formel für den Durchschnitt von B2 bis B5.', a: ['=MITTELWERT(B2:B5)'], tipp: ['Durchschnitt heißt in Excel MITTELWERT.'] },
+    { q: 'Schreib die Formel für den Durchschnitt von B2 bis B5.', a: ['=MITTELWERT(B2:B5)', '=(B2+B3+B4+B5)/4', '=SUMME(B2:B5)/4'], tipp: ['Durchschnitt heißt in Excel MITTELWERT.'] },
     { q: 'Welche Zellen gehören zum Bereich <b>A1:A4</b>?', c: ['A1, A2, A3, A4', 'nur A1 und A4', 'A1, B1, C1, D1', 'A1 bis D4'], a: 'A1, A2, A3, A4' },
     { q: 'Wie viele Zellen hat der Bereich <b>A1:B3</b>?', a: ['6', 'sechs'], c: ['3', '4', '5'], bild: xl([['', '', ''], ['', '', ''], ['', '', '']], { sel: 'A1:B3' }), erk: '2 Spalten × 3 Zeilen = 6 Zellen' },
     { q: 'Ordne zu: Welche Funktion brauchst du?', pairs: [['alles zusammenzählen', 'SUMME'], ['Durchschnitt', 'MITTELWERT'], ['größter Wert', 'MAX'], ['kleinster Wert', 'MIN']] },
@@ -1076,7 +1076,7 @@ test({ id: 'bio-test-pflanzen', fach: 'biologie', name: 'Bio-Test Pflanzen', dat
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '28.11.2026 09:16';
+const APP_VER = '28.11.2026 09:58';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
@@ -1191,6 +1191,17 @@ function storageBanner() {
   $('#app').prepend(b);
 }
 
+/* ---------- Fragen, die die App zu Unrecht als falsch gewertet hat: aus der Fehler-Kiste nehmen (auch in synchronisierten Ständen) ---------- */
+const WRONGLY_MARKED = ['Das Staubblatt besteht aus ___ und ___.'];  // 2026-11-29: Reihenfolge der Lücken wurde fälschlich verlangt
+function fixState(s) {
+  const ids = new Set(Object.keys(FRAGE).filter(k => WRONGLY_MARKED.includes(FRAGE[k].q)));
+  const bad = (s.mistakes || []).filter(m => ids.has(m.qid)); if (!bad.length) return s;
+  s.fixedMids = [...new Set([...(s.fixedMids || []), ...bad.map(m => m.mid)])].slice(-300);
+  s.mistakes = s.mistakes.filter(m => !ids.has(m.qid));
+  ids.forEach(id => { if (s.q && s.q[id] && s.q[id].b === 0 && s.q[id].n) s.q[id].b = 1; });
+  return s;
+}
+S = fixState(S);
 /* ---------- Zwei Spielstände zusammenführen (Handy + Laptop) ---------- */
 const canon = o => JSON.stringify(o, (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? Object.keys(v).sort().reduce((r, x) => (r[x] = v[x], r), {}) : v);
 function mergeStates(a, b) {
@@ -1212,7 +1223,7 @@ function mergeStates(a, b) {
   m.mistakes = [...a.mistakes, ...b.mistakes].filter(x => !seen.has(x.mid) && seen.add(x.mid) && !done.has(x.mid) && +String(x.mid).slice(0, 13) > m.mClear)
     .sort((x, y) => String(x.mid).localeCompare(String(y.mid))).slice(-60);
   m.sync = n.sync || o.sync;
-  return m;
+  return fixState(m);
 }
 
 /* ---------- Abgleich Handy ⇄ Laptop (gleicher Familien-Code wie bei Euli, eigener Speicherplatz „FUXI…“) ---------- */
@@ -1470,7 +1481,12 @@ function evaluate(t, box, picked) {
   }
   if (t.kind === 'gap') {
     const ins = $$('[data-g]', box); if (ins.some(i => !i.value.trim())) return { empty: true, msg: 'Füll zuerst alle Lücken aus ✏️' };
-    const rs = ins.map((i, k) => textRes(i.value, String(t.gap[k]).split('|')));
+    let rs = ins.map((i, k) => textRes(i.value, String(t.gap[k]).split('|')));
+    // frei: Reihenfolge der Lücken egal (z. B. „___ und ___“) – jede Eingabe darf zu jeder noch freien Lösung passen
+    if (t.frei && !rs.every(r => r.ok)) {
+      const free = t.gap.map(g => String(g).split('|')), used = new Set();
+      rs = ins.map(i => { let best = null, bk = -1; free.forEach((alts, k) => { if (used.has(k)) return; const r = textRes(i.value, alts); if (r.ok && (!best || !best.ok)) { best = r; bk = k; } else if (!best) { best = r; bk = k; } }); if (best && best.ok) used.add(bk); return best || { ok: false }; });
+    }
     ins.forEach((i, k) => i.style.borderColor = rs[k].ok ? 'var(--green)' : rs[k].partial ? 'var(--warn)' : 'var(--red)');
     if (rs.every(r => r.ok)) return { ok: true, note: rs.map(r => r.note).filter(Boolean).join(' ') || null };
     const p = rs.find(r => r.partial); if (p && rs.every(r => r.ok || r.partial)) return p;
