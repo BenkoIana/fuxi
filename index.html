@@ -692,38 +692,224 @@ thema('geschichte', {
 });
 </script>
 <script>
-/* ===== Biologie ===== */
+/* ===== Biologie – Pflanzen (Heft ab 14.9.2026 + Arbeitsblätter, Fotos vom 28.11.2026) ===== */
+
+/* Zeichnungen mit Nummern zum Beschriften */
+const BIO_MARK = (n, x, y, tx, ty) => `<line x1="${x}" y1="${y}" x2="${tx}" y2="${ty}" stroke="#33241a" stroke-width="1.6"/><circle cx="${tx}" cy="${ty}" r="11" fill="#fff" stroke="#33241a" stroke-width="2"/><text x="${tx}" y="${ty + 5}" text-anchor="middle" font-size="14" font-weight="900" fill="#33241a">${n}</text>`;
+const BIO_BLATT = `<svg viewBox="0 0 320 200" width="320" role="img" aria-label="Blatt mit Nummern">
+  <path d="M20,180 Q45,160 72,132" stroke="#3f8f2a" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M72,132 Q115,28 280,38 Q228,152 72,132 Z" fill="#8bd46a" stroke="#3f8f2a" stroke-width="3"/>
+  <path d="M72,132 L280,38" stroke="#3f8f2a" stroke-width="2.5"/>
+  <path d="M120,110 L132,72 M160,92 L176,55 M200,74 L218,44 M120,110 L150,128 M160,92 L192,118 M200,74 L228,96" stroke="#3f8f2a" stroke-width="1.6" fill="none"/>
+  ${BIO_MARK(1, 40, 163, 18, 128)}${BIO_MARK(2, 78, 126, 70, 168)}${BIO_MARK(3, 176, 85, 160, 22)}${BIO_MARK(4, 205, 114, 250, 160)}</svg>`;
+const BIO_BLUETE = `<svg viewBox="0 0 300 270" width="300" role="img" aria-label="Blüte im Schnitt mit Nummern">
+  <path d="M150,262 L150,196" stroke="#3f8f2a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M146,190 Q70,160 74,72 Q118,108 146,172 Z" fill="#ff8fb8" stroke="#d6457f" stroke-width="2"/>
+  <path d="M154,190 Q230,160 226,72 Q182,108 154,172 Z" fill="#ff8fb8" stroke="#d6457f" stroke-width="2"/>
+  <path d="M150,196 Q108,198 92,172 Q124,176 150,188 Z" fill="#5fb83a" stroke="#3f8f2a" stroke-width="2"/>
+  <path d="M150,196 Q192,198 208,172 Q176,176 150,188 Z" fill="#5fb83a" stroke="#3f8f2a" stroke-width="2"/>
+  <path d="M138,184 L120,116 M162,184 L180,116" stroke="#c99a00" stroke-width="2.5"/>
+  <ellipse cx="119" cy="108" rx="7" ry="11" fill="#ffc800" stroke="#c99a00" stroke-width="2"/><ellipse cx="181" cy="108" rx="7" ry="11" fill="#ffc800" stroke="#c99a00" stroke-width="2"/>
+  <ellipse cx="150" cy="174" rx="15" ry="17" fill="#9be07a" stroke="#3f8f2a" stroke-width="2"/>
+  <path d="M150,157 L150,98" stroke="#3f8f2a" stroke-width="5"/><ellipse cx="150" cy="93" rx="11" ry="6" fill="#3f8f2a"/>
+  ${BIO_MARK(1, 92, 112, 30, 70)}${BIO_MARK(2, 102, 184, 30, 214)}${BIO_MARK(3, 113, 104, 30, 118)}${BIO_MARK(4, 127, 148, 30, 164)}${BIO_MARK(5, 158, 92, 270, 70)}${BIO_MARK(6, 152, 128, 270, 128)}${BIO_MARK(7, 163, 176, 270, 186)}</svg>`;
+const BIO_STAMM = `<svg viewBox="0 0 300 220" width="300" role="img" aria-label="Stammquerschnitt mit Nummern">
+  <circle cx="110" cy="110" r="100" fill="#7a4a24"/><circle cx="110" cy="110" r="86" fill="#c9905a"/><circle cx="110" cy="110" r="76" fill="#3f8f2a"/>
+  <circle cx="110" cy="110" r="72" fill="#f3dca8"/><circle cx="110" cy="110" r="42" fill="#b07a3e"/>
+  <circle cx="110" cy="110" r="58" fill="none" stroke="#e2c58a" stroke-width="1.5"/><circle cx="110" cy="110" r="28" fill="none" stroke="#9a6630" stroke-width="1.5"/>
+  ${BIO_MARK(1, 205, 80, 270, 30)}${BIO_MARK(2, 193, 102, 270, 75)}${BIO_MARK(3, 186, 118, 270, 120)}${BIO_MARK(4, 172, 140, 270, 165)}${BIO_MARK(5, 110, 110, 270, 205)}</svg>`;
+
+/* --- 1. Bau einer Pflanze (Heft 14.9.) --- */
 thema('biologie', {
-  id: 'bio-wirbeltiere', title: 'Wirbeltierklassen', icon: '🐟', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Fische, Amphibien, Reptilien, Vögel, Säugetiere.',
+  id: 'bio-pflanze-bau', title: 'Bau einer Pflanze', icon: '🌳', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Heft 14.9.',
+  desc: 'Wurzel, Stamm und der Stammquerschnitt mit Borke, Bast, Kambium und Holz.',
   lern: [
-    { h: 'Fünf Wirbeltierklassen', html: `<p>Alle Wirbeltiere haben eine <b>Wirbelsäule</b>. Es gibt fünf Klassen:</p><ul class="lern-list"><li><b>Fische</b> – Schuppen, atmen mit <b>Kiemen</b></li><li><b>Amphibien</b> (Lurche) – feuchte, nackte Haut; Larven (Kaulquappen) leben im Wasser</li><li><b>Reptilien</b> (Kriechtiere) – trockene Haut mit <b>Hornschuppen</b></li><li><b>Vögel</b> – <b>Federn</b>, legen Eier mit harter Schale</li><li><b>Säugetiere</b> – <b>Fell/Haare</b>, Junge trinken <b>Milch</b></li></ul>` },
-    { h: 'Wechselwarm und gleichwarm', html: `<p><b>Wechselwarm</b>: Die Körpertemperatur ändert sich mit der Umgebung – Fische, Amphibien, Reptilien.</p><p><b>Gleichwarm</b>: Die Körpertemperatur bleibt gleich – Vögel und Säugetiere.</p><div class="oops">Der Wal ist <b>kein Fisch</b>! Er atmet mit der Lunge und säugt seine Jungen – er ist ein Säugetier.</div>` },
+    { h: 'Die Teile einer Pflanze', html: `<p>Eine Pflanze besteht aus <b>Wurzeln</b>, <b>Stamm oder Stängel</b> und <b>Blättern</b>.</p><p>Je nach Jahreszeit bilden sich <b>Blüten</b> und daraus <b>Früchte</b>.</p><p><b>Aufgaben der Wurzel:</b> Verankerung im Boden · Aufnahme von <b>Wasser und Mineralstoffen</b> · <b>Speicher für Stärke</b> (z. B. Karotte, Zuckerrübe)</p><div class="merke">Wurzel = festhalten, trinken, speichern</div>` },
+    { h: 'Der Stamm', html: `<p>Der Stamm <b>hebt die Blätter in die Sonne</b> und <b>trägt Blätter, Blüten und Früchte</b>.</p><p>Er ist auch die „Straße“ der Pflanze: <b>Wasser</b> fließt von <b>unten nach oben</b> zu den Blättern, <b>Zucker</b> fließt von <b>oben nach unten</b>.</p><div class="merke">Wasser ↑ hinauf · Zucker ↓ hinunter</div>` },
+    { h: 'Der Stammquerschnitt', html: `<div>${BIO_STAMM}</div><p>Von außen nach innen:</p><p><b>1 Borke</b> – äußerste Schicht, schützt vor <b>Austrocknung</b> und <b>Krankheitserregern</b> · <b>2 Bast</b> – leitet <b>Zucker</b> von den Blättern abwärts</p><p><b>3 Kambium</b> – die <b>Wachstumsschicht</b>: bildet nach innen Holzzellen und nach außen Bast · <b>4 Splintholz</b> – leitet <b>Wasser</b> zu den Blättern · <b>5 Kernholz</b> – bildet die <b>Säule</b>, die den Baum stützt</p><div class="merke">Borke + Bast = Rinde</div>` },
   ],
   fragen: [
-    { q: 'Womit atmen Fische?', a: ['mit Kiemen', 'Kiemen'], c: ['mit der Lunge', 'mit der Haut', 'mit Tracheen'] },
-    { q: 'Zu welcher Klasse gehört der Frosch?', a: ['Amphibien', 'Lurche'], c: ['Reptilien', 'Fische', 'Säugetiere'] },
-    { q: 'Zu welcher Klasse gehört die Eidechse?', a: ['Reptilien', 'Kriechtiere'], c: ['Amphibien', 'Vögel', 'Säugetiere'] },
-    { q: 'Zu welcher Klasse gehört der Wal?', a: 'Säugetiere', c: ['Fische', 'Amphibien', 'Reptilien'], falsch: { 'Fische': 'Er lebt zwar im Wasser, atmet aber mit der Lunge und säugt seine Jungen.' } },
-    { q: 'Kreuze alle <b>gleichwarmen</b> Tiere an.', m: ['Amsel', 'Hund', 'Forelle', 'Kröte', 'Fledermaus'], a: ['Amsel', 'Hund', 'Fledermaus'] },
-    { q: 'Ordne die Körperbedeckung zu.', pairs: [['Fische', 'Schuppen'], ['Vögel', 'Federn'], ['Säugetiere', 'Fell/Haare'], ['Reptilien', 'Hornschuppen'], ['Amphibien', 'nackte, feuchte Haut']] },
-    { q: 'Die Larven der Frösche heißen ___.', gap: ['Kaulquappen|Kaulquappe'] },
-    { q: 'Alle Wirbeltiere haben eine Wirbelsäule.', tf: true },
+    { q: 'Kreuze die drei Grundteile einer Pflanze an.', m: ['Wurzel', 'Stamm oder Stängel', 'Blätter', 'Kambium', 'Zapfen'], a: ['Wurzel', 'Stamm oder Stängel', 'Blätter'] },
+    { q: 'Kreuze alle Aufgaben der <b>Wurzel</b> an.', m: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke', 'Fotosynthese', 'Insekten anlocken'], a: ['Verankerung im Boden', 'Aufnahme von Wasser und Mineralstoffen', 'Speicher für Stärke'] },
+    { q: 'Nenne eine Pflanze, deren Wurzel Stärke speichert.', a: ['Karotte', 'Zuckerrübe', 'Karotten', 'Möhre', 'Rübe'], c: ['Tulpe', 'Fichte', 'Gras'] },
+    { q: 'In welche Richtung fließt das <b>Wasser</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von unten nach oben' },
+    { q: 'In welche Richtung fließt der <b>Zucker</b> im Stamm?', c: ['von unten nach oben', 'von oben nach unten'], a: 'von oben nach unten', erk: 'Der Zucker entsteht in den Blättern und wird nach unten verteilt.' },
+    { q: 'Kreuze alle Aufgaben des <b>Stammes</b> an.', m: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker', 'nimmt Wasser aus dem Boden auf'], a: ['hebt die Blätter in die Sonne', 'trägt Blätter, Blüten und Früchte', 'transportiert Wasser und Zucker'], erk: 'Wasser aus dem Boden aufnehmen – das macht die Wurzel.' },
+    { q: 'Ordne die Nummern im Stammquerschnitt zu.', bild: BIO_STAMM, pairs: [['1', 'Borke'], ['2', 'Bast'], ['3', 'Kambium'], ['4', 'Splintholz'], ['5', 'Kernholz']] },
+    { q: 'Ordne den Stammquerschnitt von <b>außen nach innen</b>.', order: ['Borke', 'Bast', 'Kambium', 'Splintholz', 'Kernholz'] },
+    { q: 'Wie heißt die äußerste Schicht des Stammes?', a: ['Borke', 'die Borke'], c: ['Bast', 'Kambium', 'Kernholz'] },
+    { q: 'Welche Schicht leitet den Zucker von den Blättern abwärts?', a: ['Bast', 'der Bast'], c: ['Borke', 'Splintholz', 'Kernholz'] },
+    { q: 'Wie heißt die Wachstumsschicht im Stamm?', a: ['Kambium', 'das Kambium'], c: ['Bast', 'Borke', 'Splintholz'] },
+    { q: 'Welches Holz leitet das Wasser zu den Blättern?', a: ['Splintholz', 'das Splintholz'], c: ['Kernholz', 'Bast', 'Borke'], falsch: { 'Kernholz': 'Das Kernholz stützt den Baum wie eine Säule. Das Wasser leitet das Splintholz.' } },
+    { q: 'Ordne die Aufgabe zu.', pairs: [['Borke', 'Schutz vor Austrocknung und Krankheitserregern'], ['Bast', 'leitet Zucker nach unten'], ['Splintholz', 'leitet Wasser nach oben'], ['Kernholz', 'stützt den Baum wie eine Säule']] },
+    { q: 'Borke und Bast zusammen nennt man ___.', gap: ['Rinde'] },
+    { q: 'Das Kambium bildet nach innen Holzzellen und nach außen Bast.', tf: true },
   ],
 });
+
+/* --- 2. Das Blatt (Heft) --- */
 thema('biologie', {
-  id: 'bio-insekten', title: 'Insekten', icon: '🐞', gruppe: '🧪 Zum Ausprobieren', desc: 'Probe-Stoff – Körperbau und Entwicklung.',
+  id: 'bio-blatt', title: 'Das Blatt', icon: '🍃', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Heft · Buch S. 17',
+  desc: 'Aufbau, Blattformen und die Aufgaben des Blattes: Verdunstung, Atmung, Fotosynthese.',
   lern: [
-    { h: 'Körperbau der Insekten', html: `<p>Insekten haben <b>3 Körperabschnitte</b>: <b>Kopf, Brust, Hinterleib</b>.</p><p>Sie haben <b>6 Beine</b> (an der Brust), meist <b>Flügel</b> und <b>Fühler</b> am Kopf. Viele haben <b>Facettenaugen</b> aus vielen Einzelaugen.</p><p>Statt Knochen haben sie ein <b>Außenskelett</b> aus Chitin. Sie atmen durch <b>Tracheen</b> (feine Röhren).</p><div class="oops">Spinnen sind <b>keine Insekten</b> – sie haben 8 Beine!</div>` },
-    { h: 'Verwandlung', html: `<p><b>Vollständige Verwandlung</b>: Ei → Larve → <b>Puppe</b> → fertiges Insekt (z. B. Schmetterling, Marienkäfer, Biene).</p><p><b>Unvollständige Verwandlung</b>: Ei → Larve → fertiges Insekt, <b>ohne Puppe</b> (z. B. Heuschrecke, Libelle).</p>` },
+    { h: 'So ist ein Blatt gebaut', html: `<div>${BIO_BLATT}</div><p><b>1 Blattstiel</b> · <b>2 Blattgrund</b> (dort beginnt das Blatt) · <b>3 Blattadern</b> = <b>Blattnerven</b>: transportieren <b>Wasser und Zucker</b> · <b>4 Blattrand</b></p><p>Auf dem Blatt sitzen winzige <b>Blattporen</b> = <b>Spaltöffnungen</b>. Sie sind <b>mikroskopisch klein</b> – man sieht sie nur mit dem Mikroskop.</p>` },
+    { h: 'Blätter sind verschieden', html: `<p><b>Blattformen</b>: z. B. herzförmig, eiförmig …</p><p><b>Blattränder</b>: <b>gesägt</b> (mit kleinen Zacken) oder <b>ganzrandig</b> (glatter Rand)</p><p><b>Blattstellungen</b>: <b>wechselständig</b> (die Blätter wachsen abwechselnd einzeln am Zweig) oder <b>gegenständig</b> (zwei Blätter genau gegenüber)</p><div class="merke">Bilder dazu: Buch Seite 17</div>` },
+    { h: 'Die Aufgaben des Blattes', html: `<p><b>Verdunstung</b>: Das Blatt gibt Wasser über die <b>Blattporen</b> ab. Darum braucht die Pflanze <b>immer neues Wasser</b> – und damit kommen auch neue <b>Mineralstoffe</b> aus dem Boden.</p><p><b>Atmung</b> (im Heft: bei Nacht): Die Pflanze nimmt <b>Sauerstoff auf</b> und gibt <b>Kohlenstoffdioxid ab</b>.</p><p><b>Fotosynthese</b> (bei Tag) heißt „<b>mit Licht erzeugen</b>“. Das ist die <b>Ernährung</b> der Pflanze: Sie macht sich ihren Zucker selbst.</p><div class="merke">Kohlenstoffdioxid + Wasser + Sonnenlicht → Zucker + Sauerstoff</div>` },
+    { h: 'Chlorophyll und Chloroplasten', html: `<p>Der grüne Blattfarbstoff heißt <b>Chlorophyll</b> (griechisch: „Blattgrün“). Er <b>nimmt das Sonnenlicht auf</b>.</p><p>Das Chlorophyll steckt in den <b>Chloroplasten</b> – das sind kleine Räume in den Pflanzenzellen. Dort findet die <b>Fotosynthese</b> statt.</p><div class="oops">Nicht verwechseln: Chloro<b>phyll</b> = der grüne Farbstoff · Chloro<b>plasten</b> = die kleinen Räume, in denen er steckt.</div>` },
   ],
   fragen: [
-    { q: 'Wie viele Beine hat ein Insekt?', a: ['6', 'sechs'], c: ['4', '8', '10'], falsch: { '8': '8 Beine hat eine Spinne – und Spinnen sind keine Insekten!' } },
-    { q: 'Ordne die Körperabschnitte von vorne nach hinten.', order: ['Kopf', 'Brust', 'Hinterleib'] },
-    { q: 'Ordne die vollständige Verwandlung des Schmetterlings.', order: ['Ei', 'Raupe (Larve)', 'Puppe', 'Schmetterling'] },
-    { q: 'Womit atmen Insekten?', a: ['mit Tracheen', 'Tracheen'], c: ['mit Kiemen', 'mit der Lunge', 'mit der Haut'] },
-    { q: 'Eine Spinne ist ein Insekt.', tf: false, erk: 'Spinnen haben 8 Beine und nur 2 Körperabschnitte.' },
-    { q: 'Kreuze alle Insekten an.', m: ['Biene', 'Spinne', 'Marienkäfer', 'Regenwurm', 'Libelle', 'Ameise'], a: ['Biene', 'Marienkäfer', 'Libelle', 'Ameise'] },
-    { q: 'Die Augen der Insekten aus vielen Einzelaugen heißen ___.', gap: ['Facettenaugen|Facettenauge|Komplexaugen'] },
+    { q: 'Ordne die Nummern am Blatt zu.', bild: BIO_BLATT, pairs: [['1', 'Blattstiel'], ['2', 'Blattgrund'], ['3', 'Blattader'], ['4', 'Blattrand']] },
+    { q: 'Wie heißen die winzigen Öffnungen im Blatt?', a: ['Spaltöffnungen', 'Blattporen', 'Spaltöffnung', 'Blattpore'], c: ['Blattnerven', 'Chloroplasten', 'Blattränder'] },
+    { q: 'Blattadern nennt man auch ___.', gap: ['Blattnerven|Blattnerv'] },
+    { q: 'Was transportieren die Blattadern?', m: ['Wasser', 'Zucker', 'Pollen', 'Sauerstoffblasen'], a: ['Wasser', 'Zucker'] },
+    { q: 'Blattporen sind so groß, dass man sie mit freiem Auge gut sieht.', tf: false, erk: 'Sie sind mikroskopisch klein.' },
+    { q: 'Ordne zu.', pairs: [['Rand mit kleinen Zacken', 'gesägt'], ['glatter Rand', 'ganzrandig'], ['zwei Blätter genau gegenüber', 'gegenständig'], ['Blätter abwechselnd einzeln am Zweig', 'wechselständig']] },
+    { q: 'Was bedeutet „Fotosynthese“?', c: ['mit Licht erzeugen', 'mit Wasser atmen', 'Blätter abwerfen', 'Wasser verdunsten'], a: 'mit Licht erzeugen' },
+    { q: 'Ergänze die Fotosynthese: Kohlenstoffdioxid + ___ + Sonnenlicht → Zucker + ___', gap: ['Wasser', 'Sauerstoff'] },
+    { q: 'Was <b>entsteht</b> bei der Fotosynthese?', m: ['Zucker', 'Sauerstoff', 'Kohlenstoffdioxid', 'Wasser'], a: ['Zucker', 'Sauerstoff'], erk: 'Kohlenstoffdioxid und Wasser werden <b>verbraucht</b>.' },
+    { q: 'Was <b>braucht</b> die Pflanze für die Fotosynthese?', m: ['Kohlenstoffdioxid', 'Wasser', 'Sonnenlicht', 'Zucker'], a: ['Kohlenstoffdioxid', 'Wasser', 'Sonnenlicht'] },
+    { q: 'Wie heißt der grüne Blattfarbstoff?', a: ['Chlorophyll'], c: ['Chloroplast', 'Kambium', 'Humus'] },
+    { q: 'Wie heißen die kleinen Räume in der Pflanzenzelle, in denen die Fotosynthese stattfindet?', a: ['Chloroplasten', 'Chloroplast'], c: ['Chlorophyll', 'Blattporen', 'Blattadern'], falsch: { 'Chlorophyll': 'Chlorophyll ist der grüne Farbstoff – er steckt <b>in</b> den Chloroplasten.' } },
+    { q: 'Was macht das Chlorophyll?', c: ['Es nimmt das Sonnenlicht auf', 'Es transportiert Wasser', 'Es hält das Blatt am Zweig fest', 'Es lockt Bienen an'], a: 'Es nimmt das Sonnenlicht auf' },
+    { q: 'Was nimmt die Pflanze bei der <b>Atmung</b> auf?', a: ['Sauerstoff'], c: ['Kohlenstoffdioxid', 'Zucker', 'Sonnenlicht'], falsch: { 'Kohlenstoffdioxid': 'Das ist bei der Fotosynthese so. Bei der Atmung ist es umgekehrt: Sauerstoff hinein, Kohlenstoffdioxid hinaus.' } },
+    { q: 'Ordne zu: Was passiert?', pairs: [['Verdunstung', 'Wasser geht über die Blattporen hinaus'], ['Atmung', 'Sauerstoff auf, Kohlenstoffdioxid ab'], ['Fotosynthese', 'mit Licht Zucker herstellen']] },
+    { q: 'Warum braucht eine Pflanze immer wieder neues Wasser?', c: ['Weil sie über die Blätter Wasser verdunstet', 'Weil sie Wasser in den Blüten sammelt', 'Weil das Wasser in der Wurzel gefriert', 'Weil sie es zum Atmen ausatmet'], a: 'Weil sie über die Blätter Wasser verdunstet', erk: 'Mit dem neuen Wasser kommen auch neue Mineralstoffe aus dem Boden.' },
+    { q: 'Die Fotosynthese ist die Ernährung der Pflanze.', tf: true },
+  ],
+});
+
+/* --- 3. Herbstlicher Laubabfall (Arbeitsblatt) --- */
+thema('biologie', {
+  id: 'bio-laubfall', title: 'Herbstlicher Laubabfall', icon: '🍂', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Arbeitsblatt',
+  desc: 'Warum Bäume im Herbst ihre Blätter abwerfen.',
+  lern: [
+    { h: 'Was im Herbst passiert', html: `<p>Der Laubabfall ist die Vorbereitung auf die <b>Ruhezeit im Winter</b>. Er wird durch die <b>verringerte Lichtmenge</b> gesteuert – die Tage werden kürzer.</p><p>Das grüne <b>Chlorophyll</b> zerfällt. Jetzt sieht man die anderen <b>Blattfarbstoffe</b>: gelb, orange und rot.</p><p>Am Grund des Blattstiels bildet sich eine <b>korkartige Trennungsschicht</b>. Die <b>Wasserleitungsbahnen</b> werden unterbrochen, das Blatt wird trocken und rollt sich ein. Gewicht und Wind brechen es an dieser Stelle ab.</p>` },
+    { h: 'Was mit dem Laub passiert', html: `<p>Am Boden bildet sich die <b>Laubstreuschicht</b>. <b>Bodenorganismen</b> zersetzen sie, und die Mineralstoffe kommen zurück in den Boden. Es entsteht <b>Humus</b>.</p>` },
+    { h: 'Warum werfen Bäume die Blätter ab?', html: `<p><b>1. Schutz gegen Austrocknung</b>: Aus gefrorenem Boden kann der Baum kein Wasser aufnehmen. Über die Blätter würde er aber weiter Wasser verdunsten.</p><p><b>2. Schutz vor Frostsprengung</b>: Wasser würde in den Blättern gefrieren. Eis dehnt sich aus, die Pflanzenzellen würden <b>platzen</b>.</p><p><b>Winterharte Pflanzen</b> haben eine Art „Frostschutzmittel“ in den Blättern.</p><div class="oops">Nicht vertauschen: <b>Lichtmenge</b> = kürzere Tage, der Auslöser ganz am Anfang. <b>Frostsprengung</b> = Zellen platzen durch Eis, ein Grund für den Laubfall.</div>` },
+  ],
+  fragen: [
+    { q: 'Der Laubabfall wird durch die verringerte ___ (= kürzere Tage) gesteuert.', gap: ['Lichtmenge'], falsch: { 'Frostsprengung': 'Die Frostsprengung kommt später bei „Schutz vor …“. Kürzere Tage = weniger Licht → Lichtmenge.' } },
+    { q: 'Der grüne Blattfarbstoff, das ___, zerfällt allmählich.', gap: ['Chlorophyll'] },
+    { q: 'Wenn das Chlorophyll zerfällt, werden andere ___ wie gelb, orange und rot sichtbar.', gap: ['Blattfarbstoffe|Farbstoffe'] },
+    { q: 'Am Grunde des Blattstiels bildet sich eine ___ Trennungsschicht.', gap: ['korkartige'] },
+    { q: 'Dabei werden die ___ unterbrochen und das Blatt wird trocken.', gap: ['Wasserleitungsbahnen'] },
+    { q: 'Am Boden bildet sich eine Schicht aus Laub, die ___.', gap: ['Laubstreuschicht|Laubstreu'] },
+    { q: 'Die Laubstreu wird von ___ zersetzt. Es bildet sich Humus.', gap: ['Bodenorganismen|Bodenlebewesen'] },
+    { q: 'Was entsteht, wenn Bodenorganismen das Laub zersetzen?', a: ['Humus'], c: ['Kork', 'Chlorophyll', 'Sand'] },
+    { q: 'Schutz gegen ___: Im Winter können Pflanzen über den gefrorenen Boden kein Wasser aufnehmen.', gap: ['Austrocknung'] },
+    { q: 'Schutz vor ___: Wasser würde in den Blättern gefrieren.', gap: ['Frostsprengung'], falsch: { 'Lichtmenge': 'Die Lichtmenge (kürzere Tage) löst den Laubfall aus. Hier geht es ums Gefrieren → Frostsprengung.' } },
+    { q: 'Gefrorenes Wasser dehnt sich aus. Die Pflanzenzellen würden ___.', gap: ['platzen'] },
+    { q: 'Warum werfen Bäume im Herbst ihre Blätter ab?', m: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung', 'damit sie im Winter mehr Licht bekommen', 'weil die Blätter zu schwer werden'], a: ['Schutz gegen Austrocknung', 'Schutz vor Frostsprengung'] },
+    { q: 'Bring den Laubabfall in die richtige Reihenfolge.', order: ['Die Tage werden kürzer', 'Das Chlorophyll zerfällt', 'Gelb, orange und rot werden sichtbar', 'Eine korkartige Trennungsschicht bildet sich', 'Das Blatt trocknet und fällt ab', 'Bodenorganismen machen daraus Humus'] },
+    { q: 'Warum kann ein Baum im Winter kein Wasser aufnehmen?', c: ['Weil der Boden gefroren ist', 'Weil es nicht regnet', 'Weil die Wurzeln schlafen', 'Weil er keine Blätter hat'], a: 'Weil der Boden gefroren ist' },
+    { q: 'Winterharte Pflanzen haben eine Art „Frostschutzmittel“ in den Blättern.', tf: true },
+  ],
+});
+
+/* --- 4. Blüten (Heft 9.10.) --- */
+thema('biologie', {
+  id: 'bio-bluete', title: 'Blüten', icon: '🌸', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Heft 9.10.',
+  desc: 'Aufbau der Blüte: Kelchblätter, Kronblätter, Staubblatt und Stempel.',
+  lern: [
+    { h: 'Wozu gibt es Blüten?', html: `<p>Blüten dienen der <b>geschlechtlichen Fortpflanzung</b> einer Pflanze.</p><p>Nach der <b>Befruchtung</b> entwickeln sich Blüten zu <b>Früchten mit Samen</b>.</p>` },
+    { h: 'Aufbau der Blüte', html: `<div>${BIO_BLUETE}</div><p><b>2 Kelchblätter</b> (unten, grün): <b>Schutz</b> der Blüte, z. B. vor Kälte und vor dem Angefressen-Werden, und <b>Stütze</b>.</p><p><b>1 Kronblätter</b> (farbig): <b>Anlockung</b> von Tieren. Viele Blüten duften auch. Es gibt auch stinkende Blüten – die locken <b>Fliegen</b> an.</p>` },
+    { h: 'Männlich und weiblich', html: `<p>Eine <b>zwittrige</b> Blüte hat <b>beide Geschlechter</b>.</p><p><b>Männlicher Teil = Staubblatt</b>: <b>3 Staubbeutel</b> + <b>4 Staubfaden</b>. Aus dem Staubbeutel kommt der <b>Pollen</b>.</p><p><b>Weiblicher Teil = Stempel</b>: <b>5 Narbe</b> + <b>6 Griffel</b> + <b>7 Fruchtknoten</b>. Aus dem Fruchtknoten entsteht die <b>Frucht</b>.</p><div class="merke">Staubblatt = Staubbeutel + Staubfaden (männlich) · Stempel = Narbe + Griffel + Fruchtknoten (weiblich)</div>` },
+  ],
+  fragen: [
+    { q: 'Ordne die Nummern an der Blüte zu.', bild: BIO_BLUETE, pairs: [['1', 'Kronblatt'], ['2', 'Kelchblatt'], ['3', 'Staubbeutel'], ['4', 'Staubfaden']] },
+    { q: 'Ordne die Nummern an der Blüte zu.', bild: BIO_BLUETE, pairs: [['5', 'Narbe'], ['6', 'Griffel'], ['7', 'Fruchtknoten']] },
+    { q: 'Wozu dienen Blüten?', c: ['der geschlechtlichen Fortpflanzung', 'der Fotosynthese', 'der Wasseraufnahme', 'dem Schutz vor Frost'], a: 'der geschlechtlichen Fortpflanzung' },
+    { q: 'Was ist die Aufgabe der grünen <b>Kelchblätter</b>?', c: ['Schutz und Stütze der Blüte', 'Tiere anlocken', 'Pollen bilden', 'Samen bilden'], a: 'Schutz und Stütze der Blüte' },
+    { q: 'Was ist die Aufgabe der farbigen <b>Kronblätter</b>?', c: ['Tiere anlocken', 'Schutz vor Kälte', 'Wasser aufnehmen', 'die Frucht bilden'], a: 'Tiere anlocken' },
+    { q: 'Wie heißt der <b>männliche</b> Teil der Blüte?', a: ['Staubblatt', 'Staubblätter', 'das Staubblatt'], c: ['Stempel', 'Kelchblatt', 'Kronblatt'] },
+    { q: 'Wie heißt der <b>weibliche</b> Teil der Blüte?', a: ['Stempel', 'der Stempel'], c: ['Staubblatt', 'Kelchblatt', 'Staubbeutel'] },
+    { q: 'Das Staubblatt besteht aus ___ und ___.', gap: ['Staubbeutel', 'Staubfaden'], tipp: ['Beide Wörter beginnen mit „Staub…“.'] },
+    { q: 'Kreuze die drei Teile des <b>Stempels</b> an.', m: ['Narbe', 'Griffel', 'Fruchtknoten', 'Staubbeutel', 'Kelchblatt'], a: ['Narbe', 'Griffel', 'Fruchtknoten'] },
+    { q: 'Wo entsteht der Pollen?', a: ['im Staubbeutel', 'Staubbeutel'], c: ['in der Narbe', 'im Fruchtknoten', 'im Kelchblatt'] },
+    { q: 'Aus welchem Teil der Blüte entsteht die Frucht?', a: ['Fruchtknoten', 'aus dem Fruchtknoten'], c: ['Narbe', 'Kronblatt', 'Staubfaden'] },
+    { q: 'Ordne zu: männlich oder weiblich?', pairs: [['Staubbeutel', 'männlich'], ['Narbe', 'weiblich'], ['Staubfaden', 'männlich'], ['Fruchtknoten', 'weiblich']] },
+    { q: 'Was ist eine <b>zwittrige</b> Blüte?', c: ['Sie hat männliche und weibliche Teile', 'Sie hat nur männliche Teile', 'Sie hat keine Kronblätter', 'Sie blüht zweimal im Jahr'], a: 'Sie hat männliche und weibliche Teile' },
+    { q: 'Manche Blüten stinken – sie locken damit Fliegen an.', tf: true },
+  ],
+});
+
+/* --- 5. Bestäubung & Befruchtung (Heft 23.10.) --- */
+thema('biologie', {
+  id: 'bio-bestaeubung', title: 'Bestäubung & Befruchtung', icon: '🐝', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Heft 23.10.',
+  desc: 'Wind- und Tierbestäubung, der Weg des Pollens und Symbiose.',
+  lern: [
+    { h: 'Bestäubung', html: `<p><b>Bestäubung</b>: Der <b>Pollen</b> gelangt auf die <b>Narbe</b>.</p><p>Es gibt <b>Windbestäubung</b> und <b>Tierbestäubung</b> – z. B. durch Bienen, Käfer, Schmetterlinge, Vögel und Fledermäuse.</p>` },
+    { h: 'Befruchtung', html: `<p>Der Pollen auf der Narbe bildet einen <b>Pollenschlauch</b>.</p><p>Der Pollenschlauch wächst durch den <b>Griffel</b> bis zum <b>Fruchtknoten</b> und dort zur <b>Samenanlage</b>.</p><p>Dann <b>verschmelzen</b> die weibliche <b>Eizelle</b> und die männliche <b>Samenzelle</b>. Das ist die <b>Befruchtung</b>.</p><div class="oops">Bestäubung ≠ Befruchtung! Bestäubung = Pollen landet auf der Narbe. Befruchtung = Eizelle und Samenzelle verschmelzen – das kommt danach.</div>` },
+    { h: 'Blütenökologie: Symbiose', html: `<p>Eine <b>Symbiose</b> ist, wenn sich <b>zwei verschiedene Lebewesen gegenseitig helfen</b> – beide haben einen Vorteil.</p><p>Beispiel aus dem Heft: Ein <b>Vogel</b> putzt dem <b>Nashorn</b> Zecken und Maden vom Rücken. Der Vogel bekommt <b>Nahrung</b>, das Nashorn wird die <b>Plagegeister los</b>.</p><p>Bei Blüten genauso: Die <b>Biene</b> bekommt Nektar, die <b>Blüte</b> wird bestäubt.</p>` },
+  ],
+  fragen: [
+    { q: 'Was ist <b>Bestäubung</b>?', c: ['Pollen gelangt auf die Narbe', 'Eizelle und Samenzelle verschmelzen', 'Die Frucht fällt vom Baum', 'Die Blüte öffnet sich'], a: 'Pollen gelangt auf die Narbe' },
+    { q: 'Welche zwei Arten der Bestäubung gibt es?', m: ['Windbestäubung', 'Tierbestäubung', 'Wasserbestäubung durch Regen', 'Sonnenbestäubung'], a: ['Windbestäubung', 'Tierbestäubung'] },
+    { q: 'Kreuze alle Tiere an, die Blüten bestäuben können.', m: ['Biene', 'Schmetterling', 'Käfer', 'Fledermaus', 'Regenwurm', 'Forelle'], a: ['Biene', 'Schmetterling', 'Käfer', 'Fledermaus'] },
+    { q: 'Der Pollen auf der Narbe bildet einen ___.', gap: ['Pollenschlauch'] },
+    { q: 'Bring die Befruchtung in die richtige Reihenfolge.', order: ['Pollen gelangt auf die Narbe', 'Ein Pollenschlauch wächst', 'Er wächst durch den Griffel zum Fruchtknoten', 'Er erreicht die Samenanlage', 'Eizelle und Samenzelle verschmelzen'] },
+    { q: 'Was verschmilzt bei der Befruchtung?', m: ['die weibliche Eizelle', 'die männliche Samenzelle', 'das Kelchblatt', 'die Narbe'], a: ['die weibliche Eizelle', 'die männliche Samenzelle'] },
+    { q: 'Wie nennt man die Verschmelzung von Eizelle und Samenzelle?', a: ['Befruchtung', 'die Befruchtung'], c: ['Bestäubung', 'Fotosynthese', 'Verdunstung'] },
+    { q: 'Durch welchen Teil der Blüte wächst der Pollenschlauch zum Fruchtknoten?', a: ['Griffel', 'den Griffel', 'durch den Griffel'], c: ['Staubfaden', 'Kelchblatt', 'Kronblatt'] },
+    { q: 'Bestäubung und Befruchtung sind dasselbe.', tf: false, erk: 'Zuerst kommt die Bestäubung (Pollen auf Narbe), dann die Befruchtung (Eizelle + Samenzelle).' },
+    { q: 'Was ist eine <b>Symbiose</b>?', c: ['Zwei verschiedene Lebewesen helfen sich gegenseitig', 'Ein Tier frisst ein anderes', 'Eine Pflanze wächst ohne Licht', 'Zwei gleiche Tiere streiten'], a: 'Zwei verschiedene Lebewesen helfen sich gegenseitig' },
+    { q: 'Vogel und Nashorn: Was hat der <b>Vogel</b> davon?', c: ['Er bekommt Nahrung', 'Er wird nicht mehr gestochen', 'Er bekommt einen Schlafplatz', 'nichts'], a: 'Er bekommt Nahrung' },
+    { q: 'Vogel und Nashorn: Was hat das <b>Nashorn</b> davon?', c: ['Es wird Zecken und Maden los', 'Es bekommt Futter', 'Es kann schneller laufen', 'nichts'], a: 'Es wird Zecken und Maden los' },
+    { q: 'Biene und Blüte: Ordne zu, wer was bekommt.', pairs: [['Biene', 'Nektar als Nahrung'], ['Blüte', 'wird bestäubt']] },
+  ],
+});
+
+/* --- 6. Früchte (Heft + Arbeitsblatt „Einteilung der Früchte“) --- */
+thema('biologie', {
+  id: 'bio-fruechte', title: 'Früchte', icon: '🍎', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Heft + Arbeitsblatt',
+  desc: 'Aufgabe der Frucht und die 7 Fruchttypen.',
+  lern: [
+    { h: 'Was ist eine Frucht?', html: `<p>Eine Frucht entsteht aus einer <b>befruchteten Blüte</b> (vorher war die <b>Bestäubung</b>!).</p><p>In der Frucht befinden sich die <b>Samen</b>. Aus ihnen können später <b>neue Pflanzen</b> wachsen.</p><p><b>Aufgaben der Frucht:</b> Schutz der Samen vor <b>Austrocknung, Kälte und Verletzung</b> · <b>Vermehrung und Verbreitung</b> der Pflanze</p>` },
+    { h: 'Saftige Früchte', html: `<p>Der Fruchtknoten wird bei der Reife zu saftigem Fruchtfleisch:</p><p><b>Beere</b>: Die Samen liegen <b>frei im Fruchtfleisch</b> – z. B. Gurke, Kürbis, Paprika, Banane, Heidelbeere.</p><p><b>Steinfrucht</b>: Der Samen ist von einem harten <b>„Stein“</b> umgeben – z. B. Zwetschke, Nektarine, Kirsche.</p><p><b>Kernfrucht</b>: Ledrige Samen in einem <b>Gehäuse</b> – z. B. Apfel, Birne.</p><p><b>Sammelsteinfrucht</b>: <b>Viele kleine Steinfrüchte</b> bilden zusammen eine – z. B. Himbeere.</p><div class="oops">Überraschung: Gurke, Kürbis und Banane sind Beeren – die Himbeere und die Erdbeere aber nicht!</div>` },
+    { h: 'Trockene Früchte', html: `<p>Der Fruchtknoten wird bei der Reife trocken:</p><p><b>Nussfrucht</b>: Der Samen steckt in einer <b>harten, verholzten Schale</b> – z. B. Haselnuss, Eichel.</p><p><b>Zerfallfrucht</b>: Die Frucht <b>bricht in Stückchen</b> auseinander – z. B. Ahorn (mit „Flügeln“).</p><p><b>Springfrucht</b>: Die Frucht <b>springt auf</b> und schleudert die Samen hinaus – z. B. Fisole.</p><p>Manche trockenen Früchte fliegen mit <b>„Fallschirmen“</b> oder <b>„Flügeln“</b> davon.</p>` },
+  ],
+  fragen: [
+    { q: 'Woraus entsteht eine Frucht?', c: ['aus einer befruchteten Blüte', 'aus einem Blatt', 'aus der Wurzel', 'aus der Rinde'], a: 'aus einer befruchteten Blüte' },
+    { q: 'Was befindet sich in der Frucht?', a: ['Samen', 'die Samen'], c: ['Pollen', 'Chlorophyll', 'Blattporen'] },
+    { q: 'Kreuze die Aufgaben der Frucht an.', m: ['Schutz der Samen vor Austrocknung', 'Schutz vor Kälte und Verletzung', 'Vermehrung und Verbreitung', 'Fotosynthese', 'Wasser aus dem Boden holen'], a: ['Schutz der Samen vor Austrocknung', 'Schutz vor Kälte und Verletzung', 'Vermehrung und Verbreitung'] },
+    { q: 'Ordne zu: saftige oder trockene Frucht?', pairs: [['Beere', 'saftig'], ['Nussfrucht', 'trocken'], ['Kernfrucht', 'saftig'], ['Springfrucht', 'trocken']] },
+    { q: 'Ordne zu: saftige oder trockene Frucht?', pairs: [['Steinfrucht', 'saftig'], ['Zerfallfrucht', 'trocken'], ['Sammelsteinfrucht', 'saftig']] },
+    { q: 'Die Samen liegen frei im Fruchtfleisch. Welcher Fruchttyp ist das?', a: ['Beere'], c: ['Steinfrucht', 'Kernfrucht', 'Nussfrucht'] },
+    { q: 'Der Samen ist von einem harten Stein umgeben. Welcher Fruchttyp ist das?', a: ['Steinfrucht'], c: ['Beere', 'Kernfrucht', 'Nussfrucht'] },
+    { q: 'Ledrige Samen liegen in einem Gehäuse. Welcher Fruchttyp ist das?', a: ['Kernfrucht'], c: ['Steinfrucht', 'Beere', 'Springfrucht'] },
+    { q: 'Viele kleine Steinfrüchte bilden zusammen eine Frucht. Welcher Fruchttyp ist das?', a: ['Sammelsteinfrucht'], c: ['Beere', 'Steinfrucht', 'Zerfallfrucht'] },
+    { q: 'Die Frucht springt auf und schleudert die Samen hinaus. Welcher Fruchttyp ist das?', a: ['Springfrucht'], c: ['Zerfallfrucht', 'Nussfrucht', 'Beere'] },
+    { q: 'Die trockene Frucht bricht in Stückchen auseinander. Welcher Fruchttyp ist das?', a: ['Zerfallfrucht', 'Zerfallsfrucht'], c: ['Springfrucht', 'Nussfrucht', 'Steinfrucht'] },
+    { q: 'Der Samen steckt in einer harten, verholzten Schale. Welcher Fruchttyp ist das?', a: ['Nussfrucht', 'Nuss'], c: ['Steinfrucht', 'Kernfrucht', 'Beere'] },
+    { q: 'Ordne die Früchte ihrem Fruchttyp zu.', pairs: [['Apfel', 'Kernfrucht'], ['Zwetschke', 'Steinfrucht'], ['Himbeere', 'Sammelsteinfrucht'], ['Haselnuss', 'Nussfrucht']] },
+    { q: 'Ordne die Früchte ihrem Fruchttyp zu.', pairs: [['Gurke', 'Beere'], ['Fisole', 'Springfrucht'], ['Ahorn', 'Zerfallfrucht'], ['Birne', 'Kernfrucht']] },
+    { q: 'Kreuze alle <b>Beeren</b> an.', m: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere', 'Himbeere', 'Erdbeere'], a: ['Gurke', 'Kürbis', 'Banane', 'Heidelbeere'], erk: 'Himbeere = Sammelsteinfrucht. Die Erdbeere ist auch keine Beere.' },
+    { q: 'Die Erdbeere ist eine Beere.', tf: false, erk: 'Laut Arbeitsblatt sind Erdbeeren keine Beeren – auch wenn sie so heißen.' },
+    { q: 'Kreuze alle <b>trockenen</b> Früchte an.', m: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn', 'Apfel', 'Nektarine'], a: ['Haselnuss', 'Eichel', 'Fisole', 'Ahorn'] },
+  ],
+});
+
+/* --- 7. Fichte und Tanne (Arbeitsblatt) --- */
+thema('biologie', {
+  id: 'bio-fichte-tanne', title: 'Fichte und Tanne', icon: '🌲', gruppe: '🌱 Pflanzen', aktuell: true, src: 'Arbeitsblatt',
+  desc: 'Zwei wichtige Nadelbäume in Österreich und wie man sie unterscheidet.',
+  lern: [
+    { h: 'Nadeln und Zapfen', html: `<p>Fichte und Tanne sind zwei heimische <b>Nadelbäume</b>. Sie sehen ähnlich aus, aber:</p><p><b>Fichte</b>: Nadeln <b>spitz und stechend</b>, sie sitzen einzeln <b>rund um den Zweig</b>. Zapfen <b>hängen nach unten</b> und fallen <b>als Ganzes</b> herunter.</p><p><b>Tanne</b>: Nadeln <b>weich, flach, vorne abgerundet</b> – sie <b>stechen nicht</b>. Unten haben sie <b>zwei helle Wachsstreifen</b>. Zapfen <b>stehen aufrecht</b> auf den Ästen und <b>zerfallen am Baum</b> – die Schuppen fallen einzeln herunter.</p><div class="merke">Die Fichte sticht, die Tanne nicht! · Ein ganzer Zapfen am Waldboden ist ein Fichtenzapfen.</div>` },
+    { h: 'Rinde, Wurzel und Nutzen', html: `<p><b>Rinde</b>: Fichte <b>rötlich-braun</b> · Tanne eher <b>grau</b></p><p><b>Wurzel</b>: Fichte <b>flach und breit</b> unter der Erde · Tanne eine tiefe <b>Pfahlwurzel</b> – sie hat <b>besseren Halt</b>.</p><p><b>Nutzen</b>: Fichtenholz für <b>Möbel, Papier</b> und als <b>Bauholz</b>. Tannenholz wird auch im Bau verwendet und eignet sich für Möbel. Beide sind <b>Weihnachtsbäume</b> – die Tanne ist besonders beliebt.</p>` },
+  ],
+  fragen: [
+    { q: 'Welcher Baum hat spitze, stechende Nadeln?', c: ['Fichte', 'Tanne'], a: 'Fichte' },
+    { q: 'Welcher Baum hat weiche, flache Nadeln, die vorne abgerundet sind?', c: ['Fichte', 'Tanne'], a: 'Tanne' },
+    { q: 'Ordne zu: Fichte oder Tanne?', pairs: [['Zapfen hängen nach unten', 'Fichte'], ['Zapfen stehen aufrecht', 'Tanne'], ['Zapfen fallen als Ganzes', 'Fichte'], ['Zapfen zerfallen am Baum', 'Tanne']] },
+    { q: 'Ordne zu: Fichte oder Tanne?', pairs: [['rötlich-braune Rinde', 'Fichte'], ['graue Rinde', 'Tanne'], ['flache, breite Wurzeln', 'Fichte'], ['tiefe Pfahlwurzel', 'Tanne']] },
+    { q: 'Was hat die Tanne an der Unterseite ihrer Nadeln?', c: ['zwei helle Wachsstreifen', 'kleine Stacheln', 'rote Punkte', 'gar nichts'], a: 'zwei helle Wachsstreifen' },
+    { q: 'Wie heißt die tiefe Wurzel der Tanne?', a: ['Pfahlwurzel', 'eine Pfahlwurzel'], c: ['Flachwurzel', 'Luftwurzel', 'Speicherwurzel'] },
+    { q: 'Welcher Baum hat den besseren Halt im Boden?', c: ['Tanne', 'Fichte'], a: 'Tanne', erk: 'Wegen der tiefen Pfahlwurzel. Die Fichte wurzelt flach und kann bei Sturm leichter umfallen.' },
+    { q: 'Du findest einen ganzen Zapfen am Waldboden. Von welchem Baum ist er?', c: ['Fichte', 'Tanne'], a: 'Fichte', erk: 'Tannenzapfen zerfallen schon am Baum.' },
+    { q: 'Die Fichte sticht, die Tanne nicht.', tf: true },
+    { q: 'Wofür wird Fichtenholz verwendet?', m: ['Möbel', 'Papier', 'Bauholz', 'Glas'], a: ['Möbel', 'Papier', 'Bauholz'] },
+    { q: 'Welcher Baum ist als Weihnachtsbaum besonders beliebt?', c: ['Tanne', 'Fichte'], a: 'Tanne' },
+    { q: 'Fichte und Tanne sind Laubbäume.', tf: false, erk: 'Es sind <b>Nadel</b>bäume.' },
   ],
 });
 </script>
@@ -884,11 +1070,13 @@ thema('dgb', {
 /* ===== Tests & Schularbeiten aus dem Stoff =====
    test({ id: 'bio-test-1', fach: 'biologie', name: 'Bio-Test', date: '2026-12-03', themen: ['bio-wirbeltiere'], info: 'Buch S. 20–31' });
    (Eltern können im Elternbereich zusätzlich eigene Tests eintragen und Termine ändern.) */
+test({ id: 'bio-test-pflanzen', fach: 'biologie', name: 'Bio-Test Pflanzen', date: '2026-11-30', themen: ['bio-pflanze-bau', 'bio-blatt', 'bio-laubfall', 'bio-bluete', 'bio-bestaeubung', 'bio-fruechte', 'bio-fichte-tanne'],
+  info: 'Bau einer Pflanze & Stammquerschnitt · Das Blatt (Aufbau, Verdunstung, Atmung, Fotosynthese, Chlorophyll) · Herbstlicher Laubabfall · Blüten · Bestäubung & Befruchtung · Früchte & Fruchttypen · Fichte und Tanne' });
 </script>
 <script>
 /* ===== Fit mit Fuxi – App-Logik (Konzept wie „Mathe mit Euli“, für alle Fächer) ===== */
 const KEY = 'fuxi.v1';
-const APP_VER = '26.11.2026 16:28';
+const APP_VER = '28.11.2026 09:16';
 const AVATARS = ['🦊', '🐱', '🐼', '🦄', '🐰', '🐯', '🐸', '🐨', '🦋', '🐬', '🌸', '⭐'];
 const TITLES = ['Wissens-Entdeckerin', 'Lern-Lehrling', 'Fakten-Sammlerin', 'Wissens-Detektivin', 'Lern-Forscherin', 'Test-Heldin', 'Wissens-Genie', 'Lern-Profi', 'Wissens-Meisterin', 'Fuxi-Legende'];
 const PRAISE = ['Super gemacht! 🌟', 'Richtig! Du bist spitze! 🎉', 'Genau so! 💪', 'Perfekt! ✨', 'Klasse, das sitzt! 🙌', 'Wow, richtig! 🚀', 'Bravo! 🦊', 'Schlau wie ein Fuchs! 🧠'];
